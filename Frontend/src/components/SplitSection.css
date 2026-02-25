@@ -1,0 +1,143 @@
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  background:url("../assets/images/tree.jpg") center/cover no-repeat;
+    background-attachment: fixed;
+}
+
+/* LEFT IMAGE SIDE */
+.split-left {
+
+  display: flex;
+  align-items: center;
+  padding:0 10% 0 30%;
+}
+
+.split-left-content {
+  color: #fff;
+}
+
+.split-left .item {
+  margin-bottom: 40px;
+}
+
+.split-left h4 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.split-left p {
+  font-size: 15px;
+  line-height: 1.9;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* RIGHT WHITE SIDE */
+.split-right {
+  background: #fff;
+  padding: 120px 12%;
+}
+
+.split-right h2 {
+  font-size: 38px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #3a3a3a;   
+  margin-bottom: 30px;
+}
+
+.split-right .lead {
+  font-size: 16px;
+  line-height: 1.9;
+  color: #7a7a7a;
+  margin-bottom: 25px;
+}
+
+.split-right p {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #9a9a9a;
+  margin-bottom: 45px;
+}
+
+.quote-btn {
+  padding: 16px 32px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  
+}
+
+
+
+
+/* =========================
+   RESPONSIVE (TABLET + MOBILE)
+   ========================= */
+
+@media (max-width: 992px) {
+  .split {
+    grid-template-columns: 1fr;
+    /* background-attachment: scroll; */
+    width: 100%;
+  }
+
+  /* FULL-WIDTH IMAGE SECTION */
+  .split-left {
+    width: 100%;
+    min-height: 360px;
+    padding: 80px 20px;
+    background: rgba(0, 0, 0, 0.6); /* text readability */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .split-left-content {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .split-left h4 {
+    font-size: 20px;
+  }
+
+  .split-left p {
+    font-size: 14px;
+  }
+
+  /* WHITE CONTENT BELOW IMAGE */
+  .split-right {
+    width: 100%;
+    padding: 60px 20px;
+  }
+
+  .split-right h2 {
+    font-size: 28px;
+    line-height: 1.25;
+  }
+
+  .split-right .lead {
+    font-size: 15px;
+  }
+}
+
+
+
+@media (max-width: 480px) {
+  .split-left {
+    min-height: 300px;
+    padding: 60px 16px;
+  }
+
+  .split-right {
+    padding: 40px 16px;
+  }
+
+  .split-right h2 {
+    font-size: 24px;
+  }
+}

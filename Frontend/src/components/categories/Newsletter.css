@@ -1,0 +1,40 @@
+.newsletter {
+  text-align: center;
+  padding: 80px 20px;
+}
+ 
+.newsletter h2 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+ 
+.newsletter p {
+  color: #666;
+  margin-bottom: 30px;
+}
+ 
+.newsletter-form {
+  display: flex;
+  justify-content: center;
+}
+ 
+.newsletter-form input {
+  width: 260px;
+  padding: 14px;
+  border: 1px solid #ddd;
+  outline: none;
+}
+ 
+.newsletter-form button {
+  padding: 14px 28px;
+  border: none;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
+}
+ 
+/* 🔥 HOVER EFFECT */
+.newsletter-form button:hover {
+  background: #ff8a65;
+}

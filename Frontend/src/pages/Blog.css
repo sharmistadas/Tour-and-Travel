@@ -1,0 +1,53 @@
+/* ===== BLOG WRAPPER ===== */
+.blog-wrapper {
+  padding: 80px 0;
+  background: #f9f9f9;
+}
+
+/* ===== MAIN LAYOUT ===== */
+.blog-content {
+  display: grid;
+  grid-template-columns: 60% 35%;
+  justify-content: space-between;
+  width: 80%;
+  justify-self: center;
+}
+
+/* ===== LEFT BLOG LIST ===== */
+.blog-list {
+  width: 100%;
+}
+
+/* Add frame look like GoodLayers */
+.blog-list .blog-card {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 90%;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .blog-content {
+    gap: 30px;
+  }
+}
+
+@media (max-width: 900px) {
+  .blog-content {
+    flex-direction: column;
+  }
+
+  .blog-list,
+  .sidebar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .blog-wrapper {
+    padding: 60px 0;
+  }
+}

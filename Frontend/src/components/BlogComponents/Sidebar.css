@@ -1,0 +1,136 @@
+/* ================= SIDEBAR ================= */
+.sidebar {
+  top: 125px;
+}
+
+/* ================= COMMON WIDGET ================= */
+.widget {
+  background: #fff;
+  padding: 30px;
+  margin-bottom: 40px;
+}
+
+.widget h4 {
+  margin-bottom: 20px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* ================= RECENT WORKS ================= */
+.recent-works {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.recent-works img {
+  width: 100%;
+  height: 70px;
+  object-fit: cover;
+}
+
+/* ================= COMMENTS ================= */
+.comments {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.comments li {
+  font-size: 14px;
+  color: #555;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* ================= TAG CLOUD ================= */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 9px 14px;
+  font-size: 14px;
+  color: #555;
+  border: 1px solid #e5e5e5;
+  text-decoration: none;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+
+.tag:hover {
+  background: #4a7efc;
+  color: #fff;
+  border-color: #4a7efc;
+}
+
+/* ================================================= */
+/* ================= RESPONSIVE ==================== */
+/* ================================================= */
+
+/* Tablets */
+@media (max-width: 992px) {
+  .widget {
+    padding: 26px;
+  }
+
+  .recent-works img {
+    height: 65px;
+  }
+
+  .tag {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    position: static;
+    top: auto;
+  }
+
+  .widget {
+    margin-bottom: 30px;
+  }
+
+  .recent-works {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .recent-works img {
+    height: 60px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .widget {
+    padding: 22px;
+  }
+
+  .widget h4 {
+    font-size: 15px;
+  }
+
+  .recent-works {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .recent-works img {
+    height: 70px;
+  }
+
+  .comments li {
+    font-size: 13px;
+  }
+
+  .tag {
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+}

@@ -1,0 +1,97 @@
+.final {
+  padding: 120px 10%;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 90px;
+  background: #fff;
+}
+
+/* LEFT SIDE */
+.final-quote {
+  position: relative;
+  padding-left: 40px;
+}
+
+.quote-mark {
+  position: absolute;
+  left: 0;
+  top: -15px;
+  font-size: 64px;
+  color: #ccc;
+  font-family: serif;
+}
+
+.final-quote p {
+  font-size: 16px;
+  line-height: 1.9;
+  color: #666;
+  font-style: italic;
+  margin-bottom: 30px;
+}
+
+.final-quote strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+/* RIGHT SIDE */
+.final-content {
+  padding-top: 5px;
+}
+
+.final-tagline {
+  display: block;
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
+  margin-bottom: 15px;
+}
+
+.final-content h2 {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.final-content p {
+  font-size: 16px;
+  line-height: 1.9;
+  color: #777;
+  max-width: 620px;
+}
+
+
+
+
+
+/* ===== FINAL QUOTE RESPONSIVE ===== */
+@media (max-width: 992px) {
+  .final {
+    grid-template-columns: 1fr;
+    gap: 60px;
+  }
+
+  .final-content h2 {
+    font-size: 34px;
+  }
+}
+
+@media (max-width: 576px) {
+  .final {
+    padding: 80px 20px;
+  }
+
+  .final-content h2 {
+    font-size: 28px;
+  }
+
+  .final-btn {
+    padding: 12px 28px;
+    font-size: 13px;
+  }
+}
+
+

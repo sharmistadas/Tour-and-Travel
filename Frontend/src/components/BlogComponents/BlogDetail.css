@@ -1,0 +1,286 @@
+/* ================= HERO ================= */
+.single-post-hero {
+  height: 65vh;
+  background: url("https://demo.goodlayers.com/traveltour/wp-content/themes/traveltour/images/page-title-background.jpg")
+    center / cover no-repeat;
+  background-color: #4f4e4e;
+  background-blend-mode: multiply;
+}
+
+.single-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #fff;
+  padding: 0 20px;
+}
+
+.single-meta-row {
+  display: flex;
+  gap: 18px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.single-date {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.single-date .day {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.single-date .month {
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.meta-item {
+  opacity: 0.9;
+}
+
+.single-post-title {
+  font-size: 44px;
+  font-weight: 700;
+  max-width: 800px;
+  line-height: 1.2;
+}
+
+/* ================= BODY ================= */
+.single-post-body {
+  background: #fff;
+  padding: 80px 0;
+}
+
+.post-wrapper {
+  max-width: 1200px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 60% 35%;
+  justify-content: space-between;
+  gap: 5%;
+  padding: 0 20px;
+}
+
+.post-content {
+  font-size: 16px;
+  line-height: 1.9;
+  color: #555;
+}
+
+/* IMAGES */
+.main-post-img,
+.secondary-img {
+  width: 100%;
+  margin: 30px 0;
+  height: auto;
+  max-height: 600px;
+  object-fit: cover;
+}
+
+/* ================= QUOTES ================= */
+.quote-default {
+  border-left: 4px solid #4a7efc;
+  padding: 20px 30px;
+  background: #f7f7f7;
+  font-style: italic;
+  margin: 32px 0;
+}
+
+.quote-light {
+  background: #f5f5f5;
+  padding: 20px 26px;
+  font-style: italic;
+  color: #777;
+  margin: 32px 0;
+}
+
+.post-content h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 32px 0 16px;
+}
+
+/* ================= LIST ================= */
+.post-list {
+  padding-left: 20px;
+  margin-top: 18px;
+}
+
+.post-list li {
+  font-size: 15px;
+  color: #555;
+}
+/* ADD THESE TO FIX GRID STRUCTURE */
+.post-content-wrapper {
+  width: 100%;
+}
+.sidebar-wrapper {
+  width: 100%;
+}
+
+/* ENSURE COMMENT SECTION STYLES APPLY */
+.comment-section {
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 1px solid #eee;
+}
+/* ================= COMMENTS ================= */
+.comment-section {
+  max-width: 800px;
+  margin: 80px auto;
+  padding: 0 20px;
+}
+
+.comment-title {
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: 2px;
+  font-weight: 600;
+  margin-bottom: 40px;
+  color: #111;
+}
+
+/* ================= FORM ================= */
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comment-form textarea {
+  width: 100%;
+  height: 160px;
+  padding: 14px;
+  font-size: 14px;
+  border: 1px solid #e5e5e5;
+  outline: none;
+  resize: none;
+}
+
+.comment-form input[type="text"],
+.comment-form input[type="email"] {
+  padding: 14px;
+  font-size: 14px;
+  border: 1px solid #e5e5e5;
+  outline: none;
+  width: 100%;
+}
+
+.comment-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.comment-checkbox {
+  font-size: 13px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-form button {
+  margin-top: 10px;
+  align-self: center;
+  background: #4a7efc;
+  color: #fff;
+  border: none;
+  padding: 12px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.comment-form button:hover {
+  background: #3a66d6;
+}
+
+/* ================= TAGS ================= */
+.tag-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #4a7efc;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.tag-btn:hover {
+  background: #4a7efc;
+  color: #fff;
+  border-color: #4a7efc;
+}
+
+/* ================================================= */
+/* ================= RESPONSIVE ==================== */
+/* ================================================= */
+
+/* Tablets */
+@media (max-width: 992px) {
+  .single-post-title {
+    font-size: 34px;
+  }
+
+  .post-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .single-post-hero {
+    height: 50vh;
+  }
+
+  .single-post-title {
+    font-size: 28px;
+  }
+
+  .single-meta-row {
+    font-size: 13px;
+  }
+
+  .single-post-body {
+    padding: 60px 0;
+  }
+
+  .comment-section {
+    margin: 60px auto;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .single-post-title {
+    font-size: 24px;
+  }
+
+  .comment-row {
+    grid-template-columns: 1fr;
+  }
+
+  .comment-form button {
+    width: 100%;
+  }
+}

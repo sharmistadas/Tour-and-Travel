@@ -1,0 +1,766 @@
+/* TourDestination.css - Enhanced with Wishlist/Cart Icons */
+
+.tour-section {
+  padding: 100px 20px;
+  background: #fff;
+  position: relative;
+}
+
+.tour-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.tour-subtitle {
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-size: 24px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.tour-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 44px;
+  background: linear-gradient(135deg, #233cfe 0%, #26d0ce 100%);
+  font-weight: 700;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Filters Section */
+.tour-filters {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.filters-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 180px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+}
+
+.filter-icon {
+  width: 18px;
+  height: 18px;
+  color: #233cfe;
+}
+
+.filter-dropdown {
+  position: relative;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 10px 35px 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #233cfe;
+  box-shadow: 0 0 0 3px rgba(35, 60, 254, 0.1);
+}
+
+.filter-dropdown::after {
+  content: "▼";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #666;
+  font-size: 12px;
+}
+
+.filter-results {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid #e0e0e0;
+  margin-left: auto;
+}
+
+.results-count {
+  font-family: "Poppins", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #233cfe;
+}
+
+.results-text {
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  color: #666;
+}
+
+.reset-filters-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reset-filters-btn:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+.reset-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Active Filters */
+.active-filters {
+  max-width: 1200px;
+  margin: 0 auto 30px;
+}
+
+.active-filters-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.active-filters-label {
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.active-filter-tags {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.active-filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #e9ecef;
+  color: #495057;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.remove-filter {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.remove-filter:hover {
+  color: #dc3545;
+}
+
+/* Tours Grid */
+.tour-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 30px;
+}
+
+.tour-card {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.tour-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.tour-image {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+}
+
+.tour-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.tour-card:hover .tour-image img {
+  transform: scale(1.1);
+}
+
+/* ===== HOVER ACTION BUTTONS ===== */
+.card-hover-actions {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s ease;
+  z-index: 3;
+}
+
+.tour-card:hover .card-hover-actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.action-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.action-icon-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.action-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Wishlist Button */
+.wishlist-btn svg {
+  stroke: #dc3545;
+  fill: none;
+}
+
+.wishlist-btn:hover svg {
+  fill: #dc3545;
+  transform: scale(1.1);
+}
+
+.wishlist-btn.active {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.wishlist-btn.active svg {
+  stroke: white;
+  fill: white;
+  animation: heartBeat 0.6s ease;
+}
+
+@keyframes heartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.3);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(1.2);
+  }
+}
+
+/* Cart Button */
+.cart-btn svg {
+  stroke: #233cfe;
+}
+
+.cart-btn:hover {
+  background: rgba(35, 60, 254, 0.1);
+}
+
+.cart-btn.active {
+  background: linear-gradient(135deg, #233cfe 0%, #1a2880 100%);
+}
+
+.cart-btn.active svg {
+  stroke: white;
+}
+
+.cart-check {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ===== END HOVER ACTIONS ===== */
+
+.tour-price {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: linear-gradient(135deg, #233cfe 0%, #1a2880 100%);
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 4px;
+  z-index: 2;
+  box-shadow: 0 4px 12px rgba(35, 60, 254, 0.3);
+}
+
+.tour-rating {
+  position: absolute;
+  top: 70px;
+  left: 15px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  z-index: 2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.star-icon {
+  width: 16px;
+  height: 16px;
+  color: #ffc107;
+}
+
+.tour-type-badge {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 2;
+  backdrop-filter: blur(10px);
+}
+
+.tour-category-badge {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background: rgba(38, 208, 206, 0.9);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 2;
+  backdrop-filter: blur(10px);
+}
+
+.tour-info {
+  padding: 25px;
+}
+
+.tour-header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.tour-days {
+  color: #233cfe;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background: rgba(35, 60, 254, 0.1);
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.tour-country-code {
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.tour-info h3 {
+  font-family: "Poppins", sans-serif;
+  font-size: 20px;
+  margin: 10px 0;
+  color: #000;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.tour-info h3:hover {
+  color: #233cfe;
+}
+
+.tour-location {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tour-location::before {
+  content: "📍";
+  font-size: 12px;
+}
+
+.tour-meta {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: #233cfe;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.tour-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tour-description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.tour-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.tour-details-btn,
+.tour-book-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tour-details-btn {
+  background: #f8f9fa;
+  color: #495057;
+  border: 2px solid #e0e0e0;
+}
+
+.tour-details-btn:hover {
+  background: #e9ecef;
+  border-color: #c0c0c0;
+}
+
+.tour-book-btn {
+  background: linear-gradient(135deg, #233cfe 0%, #1a2880 100%);
+  color: white;
+}
+
+.tour-book-btn:hover {
+  background: linear-gradient(135deg, #1a2880 0%, #0d165e 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(35, 60, 254, 0.3);
+}
+
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  bottom: -100px;
+  right: 30px;
+  background: white;
+  color: #333;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  transition: all 0.3s ease;
+  border-left: 4px solid #233cfe;
+}
+
+.toast-notification.show {
+  bottom: 30px;
+}
+
+.toast-notification.success {
+  border-left-color: #28a745;
+}
+
+.toast-notification.warning {
+  border-left-color: #ffc107;
+}
+
+/* No Tours Found */
+.no-tours-found {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.no-results-icon {
+  width: 60px;
+  height: 60px;
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+.no-tours-found h3 {
+  font-family: "Poppins", sans-serif;
+  font-size: 24px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.no-tours-found p {
+  color: #999;
+  margin-bottom: 30px;
+}
+
+/* View All Button */
+.view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 36px;
+  background: linear-gradient(135deg, #233cfe 0%, #1a2880 100%);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(35, 60, 254, 0.3);
+}
+
+.view-all-btn:hover {
+  background: linear-gradient(135deg, #1a2880 0%, #0d165e 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(35, 60, 254, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .tour-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .filter-row {
+    justify-content: flex-start;
+  }
+  
+  .filter-group {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tour-section {
+    padding: 80px 15px;
+  }
+  
+  .tour-title {
+    font-size: 32px;
+  }
+  
+  .tour-subtitle {
+    font-size: 20px;
+  }
+  
+  .tour-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tour-filters {
+    padding: 20px;
+  }
+  
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-results {
+    margin-left: 0;
+    justify-content: center;
+  }
+  
+  /* Make hover actions always visible on mobile */
+  .card-hover-actions {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .action-icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .action-icon-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .toast-notification {
+    right: 15px;
+    left: 15px;
+  }
+  
+  .toast-notification.show {
+    bottom: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tour-actions {
+    flex-direction: column;
+  }
+  
+  .tour-meta {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .tour-image {
+    height: 200px;
+  }
+  
+  .tour-card {
+    max-width: 350px;
+    margin: 0 auto;
+  }
+  
+  .view-all-btn {
+    padding: 12px 24px;
+    font-size: 15px;
+    width: 100%;
+  }
+}

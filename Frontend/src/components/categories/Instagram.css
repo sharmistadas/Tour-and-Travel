@@ -1,0 +1,45 @@
+.instagram::before{
+content: "";
+display: block;
+width: 100%;
+height: 1px;
+background: #e6e6e6;
+margin: 0 0 10px;
+}
+
+
+.instagram {
+  margin-top: 80px;
+  text-align: center;
+}
+
+.instagram h4 {
+  font-size: 14px;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  color: #111;
+
+  /* 🔥 Icon alignment */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Instagram icon size & color */
+.instagram h4 svg {
+  font-size: 16px;
+  color: black;
+}
+
+/* ONE ROW IMAGE STRIP */
+.insta-grid {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+
+.insta-grid img {
+  width: 20%;
+  height: 220px;
+  object-fit: cover;
+}

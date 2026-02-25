@@ -1,0 +1,14 @@
+.content-card {
+  background-color: var(--white);
+  border: 2px solid var(--border-gray);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 20px;
+}

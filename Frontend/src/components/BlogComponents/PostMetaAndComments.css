@@ -1,0 +1,213 @@
+/* ================= POST EXTRA ================= */
+.post-extra {
+  max-width: 800px;
+  margin: 80px auto;
+  text-align: center;
+  padding: 0 20px;
+}
+
+/* ================= SHARE ================= */
+.post-share {
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #111;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.share-icons a {
+  margin: 0 6px;
+  text-decoration: none;
+  color: #111;
+  font-weight: 600;
+}
+
+/* ================= AUTHOR ================= */
+.post-author {
+  margin-bottom: 60px;
+}
+
+.post-author img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+
+.post-author .about {
+  font-size: 14px;
+  font-style: italic;
+  margin-bottom: 9px;
+  color: #b1b1b1;
+  display: block;
+  font-family: "Poppins", sans-serif;
+}
+
+.post-author h4 {
+  font-size: 26px;
+  margin: 6px 0 22px;
+  font-family: "Poppins", sans-serif;
+}
+
+.post-author p {
+  font-size: 18px;
+  color: #666;
+  max-width: 520px;
+  margin: auto;
+  line-height: 1.7;
+}
+
+/* ================= PREV NEXT ================= */
+.post-nav {
+  display: flex;
+  justify-content: space-between;
+  margin: 60px 0;
+  font-size: 13px;
+  color: #999;
+  letter-spacing: 1px;
+  gap: 20px;
+}
+
+.post-nav div {
+  max-width: 45%;
+}
+
+/* ================= RESPONSES ================= */
+.response-title {
+  font-size: 16px;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 55px;
+}
+
+/* ================= COMMENTS ================= */
+.comments-list {
+  text-align: left;
+}
+
+.comment-item {
+  display: flex;
+  gap: 18px;
+  padding: 30px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.comment-item img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.comment-body {
+  flex: 1;
+}
+
+.comment-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  color: #464646;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.comment-head span {
+  color: #999;
+}
+
+.comment-head a {
+  font-size: 12px;
+  text-decoration: none;
+  color: #999;
+}
+
+.comment-body p {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #555;
+  line-height: 1.7;
+}
+
+/* ================================================= */
+/* ================= RESPONSIVE ==================== */
+/* ================================================= */
+
+/* Tablets */
+@media (max-width: 992px) {
+  .post-extra {
+    margin: 70px auto;
+  }
+
+  .post-author h4 {
+    font-size: 22px;
+  }
+
+  .post-author p {
+    font-size: 16px;
+  }
+
+  .comment-item img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .comment-head {
+    font-size: 16px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .post-nav {
+    flex-direction: column;
+    text-align: center;
+    gap: 25px;
+  }
+
+  .post-nav div {
+    max-width: 100%;
+  }
+
+  .comment-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .comment-item img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .comment-head {
+    font-size: 15px;
+  }
+
+  .comment-body p {
+    font-size: 15px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .post-author h4 {
+    font-size: 20px;
+  }
+
+  .post-author p {
+    font-size: 15px;
+  }
+
+  .response-title {
+    font-size: 14px;
+  }
+
+  .post-share {
+    font-size: 12px;
+    gap: 12px;
+  }
+}

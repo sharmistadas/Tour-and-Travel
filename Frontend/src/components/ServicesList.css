@@ -1,0 +1,129 @@
+.services-list {
+  position: relative;
+  padding: 70px 0 40px;
+  background: #fff;
+}
+
+/* decorative bg */
+.services-list-bg {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+/* layout */
+.services-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px; /* 🔥 reduced */
+  align-items: center;
+}
+
+/* IMAGE */
+.services-list-image img {
+  width: 100%;
+  border-radius: 18px;
+  display: block;
+}
+
+/* TEXT */
+.services-list-text h2 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #000;
+  line-height: 1.25;
+  margin-bottom: 1px; /* 🔥 reduced */
+}
+
+.services-list-text .intro {
+  font-size: 18px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1px; /* 🔥 reduced */
+  max-width: 520px;
+}
+
+/* SERVICE POINTS */
+.service-point {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 1px; /* 🔥 reduced */
+}
+
+.service-point img {
+  width: 38px;
+  height: 38px;
+  margin-top: 4px;
+}
+
+.service-point h4 {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 1px; /* 🔥 reduced */
+  color: #000;
+}
+
+.service-point p {
+  font-size: 14px;
+  color: #777;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* BUTTON */
+.services-btn {
+  margin-top: 26px;
+  display: inline-block;
+  background: #4f8df7;
+  color: #fff;
+  padding: 13px 34px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+.services-btn:hover {
+  background: #3b76e5;
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+  .services-list-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .services-list-text {
+    text-align: center;
+  }
+
+  .services-list-text .intro {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .service-point {
+    justify-content: center;
+    text-align: left;
+  }
+}
+
+@media (max-width: 600px) {
+  .services-list-text h2 {
+    font-size: 28px;
+  }
+
+  .service-point {
+    align-items: flex-start;
+  }
+}

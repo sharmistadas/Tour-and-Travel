@@ -1,0 +1,153 @@
+.about-hero {
+  background:
+    linear-gradient(
+      to right,
+      rgba(0,0,0,0.55) 0%,
+      rgba(0,0,0,0.35) 40%,
+      rgba(0,0,0,0.15) 70%,
+      rgba(234, 203, 203, 0.05) 100%
+    ),
+    url("../assets/images/banner.jpg") center/cover no-repeat;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 500px;
+}
+
+
+.about-hero-content {
+  color: white;
+  padding: 140px 120px 80px;
+}
+
+.about-hero-content .subtitle {
+  /* font-size: 16px; */
+  letter-spacing: 2px;
+  font-weight: 400;
+  margin-bottom: 10px;
+  opacity: 0.9;
+      font-family: "Arizonia", cursive;
+}
+
+.about-hero-content h1 {
+ font-size: 72px;
+ font-weight: 300;
+ line-height: 1.1;
+ color:#fff;
+ font-weight: bold;
+}
+
+
+
+
+/* Tablet */
+@media (max-width: 992px) {
+  .about-hero-content {
+    padding: 100px 60px 60px;
+  }
+
+  .about-hero-content h1 {
+    font-size: 52px;
+  }
+}
+
+
+/* Mobile */
+@media (max-width: 768px) {
+  .about-hero {
+    min-height: 70vh;
+  }
+
+  .about-hero-content {
+    padding: 80px 24px 50px;
+  }
+
+  .about-hero-content h1 {
+    font-size: 38px;
+    line-height: 1.2;
+  }
+
+  .about-hero-content .subtitle {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+  }
+}
+
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .about-hero-content {
+    padding: 70px 20px 40px;
+  }
+
+  .about-hero-content h1 {
+    font-size: 30px;
+  }
+}
+
+/* ------------Intro Css------------ */
+.intro {
+  padding: 120px 0;
+  background: #ffffff;
+}
+
+.intro-container {
+  max-width: 1140px; /* THIS creates the “box” */
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 80px;
+}
+
+.intro-left .intro-title {
+      font-family: Georgia, 'Times New Roman', serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: #233cfe !important;
+    margin: 0;
+}
+.intro-left .intro-title::after{
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #f15d30;
+    margin-top: 20px;
+}
+.intro-left .line {
+  display: block;
+  width: 50px;
+  height: 1px;
+  background: #333;
+  margin-top: 25px;
+}
+
+.intro-right p {
+  font-size: 16px;
+  line-height: 1.9;
+  color: #8a8a8a;
+  margin-bottom: 25px;
+}
+
+
+
+
+
+/* ===== INTRO RESPONSIVE ===== */
+@media (max-width: 992px) {
+  .intro-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 576px) {
+  .intro {
+    padding: 80px 20px;
+  }
+
+  .intro-left h2 {
+    font-size: 30px;
+  }
+}

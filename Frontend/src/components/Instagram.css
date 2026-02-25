@@ -1,0 +1,54 @@
+.instagram::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: #e6e6e6;
+  margin: 0 0 18px;
+}
+
+.instagram {
+  margin-top: 40px;     
+  text-align: center;
+}
+
+.instagram h4 {
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  font-style: Bold;
+}
+
+.insta-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.insta-grid img {
+  width: 100%;
+  height: 170px;         /* 🔽 smaller like site */
+  object-fit: cover;
+}
+
+/* ================= RESPONSIVE : INSTAGRAM ================= */
+
+@media (max-width: 992px) {
+  .insta-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .insta-grid img {
+    height: 150px;
+  }
+}
+
+@media (max-width: 576px) {
+  .insta-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .insta-grid img {
+    height: 130px;
+  }
+}

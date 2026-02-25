@@ -1,0 +1,56 @@
+/* ===== HOME PAGE LAYOUT ===== */
+
+.home {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.banner {
+  position: relative;
+  width: 100%;
+}
+
+.nav-section {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 20px 0;
+}
+
+.hero-section {
+  width: 100%;
+}
+
+.searchbar-section {
+  position: relative;
+  width: 100%;
+}
+
+.content-sections {
+  width: 100%;
+  padding: 60px 0;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+
+@media (max-width: 768px) {
+  .nav-section {
+    padding: 15px 0;
+  }
+
+  .content-sections {
+    padding: 40px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-section {
+    padding: 12px 0;
+  }
+
+  .content-sections {
+    padding: 30px 0;
+  }
+}

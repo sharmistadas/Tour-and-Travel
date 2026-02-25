@@ -1,0 +1,57 @@
+.newsletter {
+  text-align: center;
+  padding: 45px 10px 60px;  
+}
+
+.newsletter h2 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.newsletter p {
+  color: #666;
+  margin-bottom: 28px;
+}
+
+.newsletter-form {
+  display: flex;
+  justify-content: center;
+}
+
+.newsletter-form input {
+  width: 260px;
+  padding: 14px;
+  border: 1px solid #ddd;
+  outline: none;
+}
+
+.newsletter-form button {
+  padding: 14px 28px;
+  border: none;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.newsletter-form button:hover {
+  background: #ff8a65;
+}
+/* ================= RESPONSIVE : NEWSLETTER ================= */
+
+@media (max-width: 768px) {
+  .newsletter h2 {
+    font-size: 26px;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .newsletter-form input,
+  .newsletter-form button {
+    width: 100%;
+    max-width: 360px;
+  }
+}

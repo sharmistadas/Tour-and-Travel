@@ -1,0 +1,511 @@
+/* SelectDestination.css - Enhanced with Wishlist/Cart Icons */
+
+.destination-section {
+  padding: 80px 20px 100px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+  min-height: 100vh;
+}
+
+.destination-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.destination-subtitle {
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-size: 28px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.destination-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: #233cfe !important;
+  margin: 0;
+}
+
+/* View All Button */
+.view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #233cfe 0%, #1a2880 100%) !important;
+  color: white !important;
+  text-decoration: none;
+  border-radius: 30px;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(35, 60, 254, 0.3);
+}
+
+.view-all-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(35, 60, 254, 0.4);
+  border: none !important;
+  background: linear-gradient(135deg, #1a2880 0%, #0d165e 100%) !important;
+}
+
+/* Country Filter */
+.country-filter {
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #444;
+}
+
+.country-select {
+  padding: 12px 40px 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.country-select:focus {
+  outline: none;
+  border-color: #233cfe;
+  box-shadow: 0 0 0 3px rgba(35, 60, 254, 0.1) !important;
+}
+
+/* Carousel Wrapper */
+.carousel-wrapper {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.carousel-btn {
+  position: absolute;
+  background: white;
+  border: 2px solid #233cfe;
+  color: #233cfe;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  top: 50%;
+  z-index: 11;
+  transform: translateY(-50%);
+}
+
+.prev-btn {
+  right: 60px;
+}
+
+.next-btn {
+  right: 0px;
+}
+
+.carousel-btn:hover:not(.disabled) {
+  background: #233cfe;
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(35, 60, 254, 0.3);
+}
+
+.carousel-btn.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #ccc;
+  color: #ccc;
+}
+
+/* Carousel Container */
+.destination-carousel {
+  overflow: hidden;
+  width: 100%;
+  scrollbar-width: none;
+}
+
+.destination-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.destination-container {
+  display: flex;
+  gap: 28px;
+  padding: 10px 5px;
+  transition: transform 0.5s ease;
+}
+
+/* Card Styles */
+.destination-card {
+  position: relative;
+  height: 380px;
+  width: 280px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #eee;
+  flex-shrink: 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.destination-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* IMAGE */
+.destination-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.destination-card:hover img {
+  transform: scale(1.05);
+}
+
+/* ===== HOVER ACTION BUTTONS ===== */
+.card-hover-actions {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s ease;
+  z-index: 3;
+}
+
+.destination-card:hover .card-hover-actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.action-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.action-icon-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.action-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Wishlist Button */
+.wishlist-btn svg {
+  stroke: #dc3545;
+  fill: none;
+}
+
+.wishlist-btn:hover svg {
+  fill: #dc3545;
+  transform: scale(1.1);
+}
+
+.wishlist-btn.active {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.wishlist-btn.active svg {
+  stroke: white;
+  fill: white;
+  animation: heartBeat 0.6s ease;
+}
+
+@keyframes heartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.3);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(1.2);
+  }
+}
+
+/* Cart Button */
+.cart-btn svg {
+  stroke: #233cfe;
+}
+
+.cart-btn:hover {
+  background: rgba(35, 60, 254, 0.1);
+}
+
+.cart-btn.active {
+  background: linear-gradient(135deg, #233cfe 0%, #1a2880 100%);
+}
+
+.cart-btn.active svg {
+  stroke: white;
+}
+
+.cart-check {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ===== END HOVER ACTIONS ===== */
+
+/* Ribbon */
+.destination-ribbon {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  z-index: 2;
+  /* backdrop-filter: blur(10px); */
+}
+.country-code {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Title Overlay */
+.destination-title-overlay {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  text-align: center;
+  z-index: 2;
+}
+
+.destination-title-overlay h3 {
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  bottom: -100px;
+  right: 30px;
+  background: white;
+  color: #333;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  transition: all 0.3s ease;
+  border-left: 4px solid #233cfe;
+}
+
+.toast-notification.show {
+  bottom: 30px;
+}
+
+.toast-notification.success {
+  border-left-color: #28a745;
+}
+
+.toast-notification.warning {
+  border-left-color: #ffc107;
+}
+
+/* No Destinations Message */
+.no-destinations-message {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 1100px) {
+  .carousel-wrapper {
+    max-width: 800px;
+  }
+  
+  .destination-card {
+    width: 340px;
+  }
+}
+
+@media (max-width: 768px) {
+  .destination-section {
+    padding: 60px 20px 80px;
+  }
+  
+  .destination-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .destination-title {
+    font-size: 32px;
+  }
+  
+  .destination-subtitle {
+    font-size: 22px;
+  }
+  
+  .country-filter {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .carousel-wrapper {
+    gap: 10px;
+  }
+  
+  .carousel-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .prev-btn {
+    right: 50px;
+  }
+  
+  /* Make hover actions always visible on mobile */
+  .card-hover-actions {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .action-icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .action-icon-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .toast-notification {
+    right: 15px;
+    left: 15px;
+  }
+  
+  .toast-notification.show {
+    bottom: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .destination-carousel {
+    margin: 0 auto;
+    max-width: 280px;
+  }
+  
+  .destination-card {
+    width: 280px;
+    height: 320px;
+  }
+  
+  .carousel-wrapper {
+    max-width: 100%;
+  }
+  
+  .country-select {
+    width: 100% !important;
+    min-width: unset;
+  }
+  
+  .carousel-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .prev-btn {
+    right: 45px;
+  }
+}

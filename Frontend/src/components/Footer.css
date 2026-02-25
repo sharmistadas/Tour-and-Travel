@@ -1,0 +1,125 @@
+.footer {
+  padding: 50px 40px;
+  background-image: url("https://preview.colorlib.com/theme/pacific/images/bg_3.jpg");
+  background-size: cover;
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-blend-mode: multiply;
+  background-color: var(--neutral-slate); /* Changed from #7d7b7b */
+}
+
+/* Titles */
+.footer-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 22px;
+  color: var(--text-white); /* Changed from #fff */
+}
+
+/* Text */
+.footer-text {
+  font-size: 15px;
+  color: var(--text-white); /* Changed from #fff */
+  line-height: 1.8;
+}
+
+/* Links */
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  text-decoration: none;
+  font-size: 15px;
+  color: var(--text-white); /* Changed from #fff */
+  transition: color var(--transition-base); /* Updated to use variable */
+}
+
+.footer-links a:hover {
+  color: var(--primary-sunset); /* Changed from #f15d30 */
+}
+
+/* Social */
+.footer-social {
+  display: flex;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.footer-social span {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-sunset); /* Changed from #f15d30 */
+  color: var(--text-white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: transform var(--transition-base); /* Updated to use variable */
+}
+
+.footer-social span:hover {
+  transform: translateY(-3px);
+  background: var(--accent-amber); /* Added hover effect */
+}
+
+/* Contact */
+.footer-contact {
+  display: flex;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--text-white); /* Changed from #fff */
+  margin-bottom: 15px;
+}
+
+.footer-inner-links {
+  display: grid;
+  grid-template-columns: 50% 50%;
+}
+
+.footer-contact svg {
+  color: var(--primary-sunset); /* Changed from #f15d30 */
+  font-size: 18px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+/* Bottom */
+.footer-bottom {
+  font-size: 14px;
+  color: var(--text-white); /* Changed from #fff */
+  padding: 0 15px;
+}
+
+@media (max-width: 976px) {
+  .footer {
+    padding: 0px 30px;
+  }
+}
+
+/* Small devices */
+@media (max-width: 576px) {
+  .footer {
+    padding: 0px 30px;
+  }
+  
+  .row {
+    width: auto !important;
+  }
+
+  .footer-title {
+    font-size: 16px;
+  }
+
+  .footer-bottom {
+    font-size: 13px;
+  }
+}

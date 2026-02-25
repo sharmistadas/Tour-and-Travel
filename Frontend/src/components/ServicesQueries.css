@@ -1,0 +1,151 @@
+.services-queries {
+  padding: 70px 0 90px;   /* reduced gap */
+  background: #fff;
+}
+
+/* wrapper */
+.queries-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* TOP TITLE */
+.queries-title {
+  text-align: center;
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 60px;
+  color: #000;
+}
+
+/* TWO COLUMN GRID */
+.queries-container {
+  display: grid;
+  grid-template-columns: 0.5fr 0.5fr;
+  gap: 80px;
+  align-items: flex-start;
+}
+
+/* LEFT TEXT */
+.queries-info p {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.queries-phone {
+  display: inline-block;
+  margin: 12px 0;
+  font-size: 16px;
+  color: #4f8cff;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.queries-time {
+  color: #4f8cff;
+  font-size: 15px;
+}
+
+/* FORM CARD */
+.queries-form-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+.queries-form-card form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.queries-form-card input,
+.queries-form-card textarea {
+  width: 100%;
+  padding: 16px 18px;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+}
+
+.queries-form-card textarea {
+  resize: none;
+}
+
+/* CHECKBOX */
+.queries-checkbox {
+  display: flex;
+  align-items: center;   /* ✅ vertical centering */
+  gap: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.queries-checkbox input {
+  width: 14px;
+  height: 14px;
+  margin: 0;         
+  cursor: pointer;
+}
+
+.queries-checkbox span {
+  color: #4f8cff;
+  cursor: pointer;
+}
+
+
+/* BUTTON */
+.queries-form-card button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 16px;
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.queries-form-card textarea {
+  resize: none;
+  min-height: 120px;
+}
+
+
+.queries-form-card button:hover {
+  background: #3b76e0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .queries-container {
+    grid-template-columns: 1fr;
+    gap: 50px;
+  }
+
+  .queries-title {
+    font-size: 32px;
+  }
+}
+
+
+@media (max-width: 900px) {
+  .queries-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .queries-title {
+    font-size: 30px;
+  }
+}

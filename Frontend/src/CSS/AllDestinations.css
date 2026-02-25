@@ -1,0 +1,641 @@
+/* AllDestinations.css */
+
+.all-destinations-page {
+  min-height: 100vh;
+  /* background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); */
+}
+
+/* BANNER SECTION */
+.destinations-banner {
+  position: relative;
+  height: 600px;
+  background-image:url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');              
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-content {
+  text-align: center;
+  color: white;
+  max-width: 800px;
+  padding: 0 20px;
+  z-index: 2;
+}
+
+.banner-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 56px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.banner-subtitle {
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 40px;
+}
+
+.back-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+  color: white;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.back-home-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.back-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* FILTERS SECTION */
+.destinations-filters {
+  background: white;
+  padding: 40px 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.filters-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.search-box {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto 30px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  color: #666;
+}
+
+.search-input {
+  width: 100%;
+  padding: 16px 60px 16px 56px;
+  border: 2px solid #e0e0e0;
+  border-radius: 50px;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #f15a29;
+  box-shadow: 0 0 0 3px rgba(241, 90, 41, 0.1);
+}
+
+.clear-search {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.clear-search:hover {
+  color: #f15a29;
+}
+
+.filter-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #444;
+  white-space: nowrap;
+}
+
+.filter-icon {
+  width: 20px;
+  height: 20px;
+  color: #f15a29;
+}
+
+.filter-dropdown {
+  position: relative;
+  min-width: 200px;
+}
+
+.country-select {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.3s ease;
+}
+
+.dropdown-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #666;
+}
+
+.results-count {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8f9fa;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+}
+
+.count-number {
+  font-family: "Poppins", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #f15a29;
+}
+
+.count-text {
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  color: #666;
+}
+
+/* DESTINATIONS GRID - Using same design as SelectDestination */
+.all-destinations-container {
+  max-width: 1400px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+.destinations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 28px;
+  padding: 20px 0;
+}
+
+.destination-card-grid {
+  position: relative;
+  height: 380px !important;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #eee;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.destination-card-grid:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.destination-card-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.destination-card-grid:hover img {
+  transform: scale(1.05);
+}
+
+/* Ribbon - same as SelectDestination */
+.destination-ribbon {
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  /* background: #233cfe !important; */
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  min-width: 160px;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.country-code {
+  font-size: 14px;
+  background:#fe9123 !important;
+  padding: 2px 6px;
+  font-weight: 600;
+}
+
+
+.destination-ribbon::before {
+  left: -22px;
+  border-left: 22px solid transparent;
+}
+
+.destination-ribbon::after {
+  right: -21px;
+  border-right: 22px solid transparent;
+}
+
+/* Tours Badge - same as SelectDestination */
+.destination-tours {
+  position: absolute;
+  bottom: 22px;
+  right: 22px;
+  background: #233cfe !important;
+  color: #fff;
+  padding: 8px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 20px;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.destination-card-grid:hover .destination-tours {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(241, 90, 41, 0.35);
+}
+
+/* NO RESULTS */
+.no-results {
+  text-align: center;
+  padding: 80px 20px;
+  grid-column: 1 / -1;
+}
+
+.no-results-icon {
+  width: 80px;
+  height: 80px;
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+.no-results h3 {
+  font-family: "Poppins", sans-serif;
+  font-size: 24px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.no-results p {
+  color: #999;
+  margin-bottom: 30px;
+}
+
+.reset-filters-btn {
+  padding: 12px 32px;
+  background: #233cfe;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reset-filters-btn:hover {
+  background: #e04a20;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(241, 90, 41, 0.3);
+}
+
+/* CTA SECTION */
+.destinations-cta {
+  background: linear-gradient(135deg, #f15a29 0%, #e04a20 100%);
+  padding: 80px 20px;
+  margin-top: 60px;
+}
+
+.cta-content {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  color: white;
+}
+
+.cta-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.cta-text {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  font-style: italic;
+  margin-bottom: 40px;
+  opacity: 0.9;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 40px;
+  background: white;
+  color: #233cfe !important;
+  border: none;
+  border-radius: 30px;
+  font-family: "Poppins", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+}
+
+.cta-arrow {
+  width: 20px;
+  height: 20px;
+}
+
+/* Add to AllDestinations.css */
+
+.filter-group-wrapper {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.country-select {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 15px;
+  color: #333;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.3s ease;
+}
+
+.country-select:focus {
+  outline: none;
+  border-color: #f15a29;
+  box-shadow: 0 0 0 3px rgba(241, 90, 41, 0.1);
+}
+
+/* Active Filters Section */
+.active-filters {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.active-filters-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.active-filters-label {
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.active-filter-tags {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.active-filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8f9fa;
+  color: #495057;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #e0e0e0;
+}
+
+.remove-filter {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.remove-filter:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.reset-all-filters {
+  background: none;
+  border: 1px solid #f15a29;
+  color: #f15a29;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reset-all-filters:hover {
+  background: #f15a29;
+  color: white;
+}
+
+.category-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #333;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.category-title:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: #f15a29;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filter-group-wrapper {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  .filter-dropdown {
+    width: 100%;
+  }
+  
+  .country-select,
+  .type-select {
+    width: 100%;
+  }
+  
+  .active-filters-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .category-title {
+    font-size: 24px;
+  }
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+  .banner-title {
+    font-size: 42px;
+  }
+  
+  .destinations-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .destinations-banner {
+    height: 400px;
+  }
+  
+  .banner-title {
+    font-size: 32px;
+  }
+  
+  .banner-subtitle {
+    font-size: 18px;
+  }
+  
+  .filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-label {
+    justify-content: center;
+  }
+  
+  .results-count {
+    justify-content: center;
+  }
+  
+  .destination-card-grid {
+    height: 320px;
+  }
+  
+  .cta-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .destinations-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .banner-title {
+    font-size: 28px;
+  }
+  
+  .cta-title {
+    font-size: 24px;
+  }
+  
+  .cta-button {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -1,0 +1,289 @@
+/* ===== HERO SECTION ===== */
+.hero {
+  position: relative;
+  height: 90vh;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  margin-bottom: 80px;
+  background-image: url("../../assets/images/image.png");
+  background-blend-mode: multiply;
+  background-color: rgb(157, 157, 157);
+}
+
+/* Container */
+.container {
+  position: relative;
+  max-width: 1140px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+  padding: 100px 0 0 0;
+}
+
+/* Hero content layout */
+.hero-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  padding: 100px 0;
+}
+
+/* Text section - Order 1 on mobile */
+.hero-text {
+  flex: 1;
+  max-width: 650px;
+  order: 1;
+}
+
+.welcome-text {
+  color: #ff7a00;
+  font-style: italic;
+  font-size: 18px;
+  margin-bottom: 10px;
+  display: block;
+  font-weight: 500;
+}
+
+.hero-title {
+  font-size: clamp(32px, 5vw, 55px);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  color: #f0f8ff !important;
+}
+
+.hero-subtitle {
+  max-width: 520px;
+  font-size: clamp(15px, 2vw, 17px);
+  line-height: 1.6;
+  color: #f0f8ff !important;
+  opacity: 0.95;
+}
+
+/* Video/Play button container - Order 2 on mobile */
+.hero-video {
+  flex-shrink: 0;
+  order: 2;
+  
+}
+
+/* Play button */
+.play-btn {
+  width: 80px;
+  height: 80px;
+  background: #ffffff;
+  color: #ff7a00;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  
+}
+
+.play-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(255, 122, 0, 0.4);
+}
+
+.play-icon {
+  font-size: 30px;
+  margin-left: 4px;
+}
+
+/* Search bar container - Always below hero content */
+.search-bar-container {
+  width: 100%;
+  position: absolute;
+  left: 15%;
+  bottom: -50px;
+}
+
+/* ===== TABLET (1024px and below) ===== */
+@media (max-width: 1024px) {
+  .hero {
+    min-height: 80vh;
+    padding: 60px 20px;
+    margin-bottom: 60px;
+  }
+
+  .container {
+    gap: 60px;
+  }
+
+  .hero-content {
+    gap: 30px;
+  }
+
+  .hero-title {
+    font-size: clamp(36px, 5vw, 44px);
+  }
+
+  .hero-subtitle {
+    font-size: 16px;
+  }
+
+  .play-btn {
+    width: 70px;
+    height: 70px;
+  }
+
+  .play-icon {
+    font-size: 26px;
+  }
+}
+
+/* ===== TABLET PORTRAIT (768px and below) ===== */
+@media (max-width: 768px) {
+  .hero {
+    height: 100vh;
+    padding: 100px 20px 60px;
+    background-attachment: scroll;
+    margin-bottom: 40px;
+  }
+.search-bar-container {
+  width: 100%;
+  position: static;
+  left: 0;
+  bottom: 0px;
+}
+  .container {
+    gap: 50px;
+  }
+
+  .hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+  }
+
+  /* Ensure text appears first on mobile */
+  .hero-text {
+    order: 1;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Play button appears after text */
+  .hero-video {
+    order: 2;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .welcome-text {
+    font-size: 16px;
+  }
+
+  .hero-title {
+    font-size: clamp(28px, 6vw, 36px);
+    width: 100%;
+  }
+
+  .hero-subtitle {
+    font-size: 15px;
+    max-width: 100%;
+  }
+
+  .play-btn {
+    width: 64px;
+    height: 64px;
+  }
+
+  .play-icon {
+    font-size: 22px;
+  }
+}
+
+/* ===== MOBILE (480px and below) ===== */
+@media (max-width: 480px) {
+  .hero {
+    margin-bottom: 30px;
+    
+  }
+
+  .container {
+    gap: 40px;
+    padding: 100px 0 0 0;
+  }
+  
+.play-btn{
+  display: none;
+}
+
+  .hero-content {
+    gap: 24px;
+  }
+
+  .welcome-text {
+    font-size: 14px;
+  }
+
+  .hero-title {
+    font-size: clamp(24px, 7vw, 30px);
+    margin-bottom: 16px;
+    color: #f0f8ff !important;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .play-btn {
+    width: 56px;
+    height: 56px;
+  }
+
+  .play-icon {
+    font-size: 20px;
+  }
+}
+
+/* ===== EXTRA SMALL MOBILE (360px and below) ===== */
+@media (max-width: 560px) {
+  .hero {
+    padding: 60px 12px 40px;
+    margin-bottom: 20px;
+    height: 100%;
+  }
+
+  .container {
+    gap: 30px;
+  }
+
+  .welcome-text {
+    font-size: 13px;
+  }
+
+  .hero-title {
+    font-size: 22px;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+  }
+
+  .play-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .play-icon {
+    font-size: 18px;
+  }
+}

@@ -1,0 +1,176 @@
+/* ActionButtons.css */
+.action-buttons-group {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+.destination-card:hover .action-buttons-group,
+.tour-card:hover .action-buttons-group,
+.destination-card-grid:hover .action-buttons-group,
+.category-card:hover .action-buttons-group,
+.destination-card-link:hover .action-buttons-group {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  position: relative;
+  color: #666;
+}
+
+.action-btn:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* Wishlist Button */
+.wishlist-btn {
+  color: #dc3545;
+}
+
+.wishlist-btn.active {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  animation: heartBeat 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wishlist-btn:not(.active):hover {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Cart Button */
+.cart-btn {
+  color: #233cfe;
+}
+
+.cart-btn.active {
+  background: linear-gradient(135deg, #233cfe 0%, #1a2880 100%);
+  color: white;
+  animation: popIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cart-btn:not(.active):hover {
+  background: rgba(35, 60, 254, 0.1);
+  color: #233cfe;
+}
+
+.cart-check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  animation: popIn 0.3s ease;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(1.1); }
+  75% { transform: scale(1.2); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Category Page Specific */
+.category-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.category-card-image {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .action-buttons-group {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .action-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .action-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  bottom: -100px;
+  right: 30px;
+  background: white;
+  color: #333;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10000;
+  transition: all 0.3s ease;
+  border-left: 4px solid #233cfe;
+}
+
+.toast-notification.show {
+  bottom: 30px;
+}
+
+.toast-notification.success {
+  border-left-color: #28a745;
+}
+
+.toast-notification.warning {
+  border-left-color: #ffc107;
+}
+
+@media (max-width: 768px) {
+  .toast-notification {
+    left: 15px;
+    right: 15px;
+  }
+  
+  .toast-notification.show {
+    bottom: 15px;
+  }
+}
