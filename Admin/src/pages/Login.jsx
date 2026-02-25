@@ -4,6 +4,8 @@ import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { MdFlight } from 'react-icons/md';
 import '../styles/Auth.css';
 
+import api from '../utils/api';
+
 const Login = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
@@ -11,7 +13,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!form.email || !form.password) {
@@ -19,10 +21,26 @@ const Login = () => {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await api.post('/admin/auth/login', form);
+      if (response.data.token) {
+        localStorage.setItem('adminToken', response.data.token);
+        localStorage.setItem('adminUser', JSON.stringify(response.data.admin));
+        navigate('/dashboard');
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } catch (err) {
+      if (err.response) {
+        setError(err.response.data.message || 'Login failed. Please check your credentials.');
+      } else if (err.request) {
+        setError('No response from server. Is the backend running?');
+      } else {
+        setError('Request error: ' + err.message);
+      }
+    } finally {
       setLoading(false);
-      navigate('/dashboard');
-    }, 900);
+    }
   };
 
   return (
