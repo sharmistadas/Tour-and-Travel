@@ -18,7 +18,7 @@ export const searchPackages = asyncHandler(async (req, res) => {
   const packages = await Package.find({
     $or: [
       { title: { $regex: keyword, $options: "i" } },
-      { location: { $regex: keyword, $options: "i" } }
+      { destination: { $regex: keyword, $options: "i" } }
     ]
   });
 

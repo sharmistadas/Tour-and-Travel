@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/coupons.css";
-
-const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+import api from "../utils/api";
 
 const ROWS_PER_PAGE = 8;
 
@@ -23,88 +23,19 @@ function isExpired(validTo) {
 }
 
 export default function CouponsOffers() {
-  const [coupons, setCoupons] = useState([
-    {
-      id: uid(),
-      code: "HELLO",
-      description: "New user discount",
-      type: "percent",
-      value: 4,
-      minPurchase: 0,
-      maxDiscount: 0,
-      usageLimit: 0,
-      perUser: 0,
-      validFrom: "2026-01-30",
-      validTo: "2026-02-06",
-      scope: "1 cat / 3 prod",
-      usage: 0,
-      active: false,
-    },
-    {
-      id: uid(),
-      code: "FLASH50",
-      description: "Flash sale - 50% off",
-      type: "percent",
-      value: 50,
-      minPurchase: 0,
-      maxDiscount: 0,
-      usageLimit: 20,
-      perUser: 1,
-      validFrom: "2026-02-03",
-      validTo: "2026-02-23",
-      scope: "All",
-      usage: 0,
-      active: true,
-    },
-    {
-      id: uid(),
-      code: "LUXURY30",
-      description: "30% off on luxury perfumes",
-      type: "percent",
-      value: 30,
-      minPurchase: 0,
-      maxDiscount: 0,
-      usageLimit: 25,
-      perUser: 1,
-      validFrom: "2026-01-22",
-      validTo: "2026-02-15",
-      scope: "1 cat",
-      usage: 0,
-      active: false,
-    },
-    {
-      id: uid(),
-      code: "WELCOME100",
-      description: "Welcome offer - 100 AED off",
-      type: "fixed",
-      value: 100,
-      minPurchase: 0,
-      maxDiscount: 0,
-      usageLimit: 1000,
-      perUser: 1,
-      validFrom: "2026-01-01",
-      validTo: "2026-01-22",
-      scope: "All",
-      usage: 0,
-      active: true,
-    },
-    {
-      id: uid(),
-      code: "PERFUME20",
-      description: "20% off on perfumes",
-      type: "percent",
-      value: 20,
-      minPurchase: 0,
-      maxDiscount: 0,
-      usageLimit: 100,
-      perUser: 1,
-      validFrom: "2026-01-22",
-      validTo: "2026-04-01",
-      scope: "1 cat",
-      usage: 0,
-      active: true,
-    },
-  ]);
+  const navigate = useNavigate();
+  const [coupons, setCoupons] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // -----------------------------
+  // AUTHENTICATION
+  // -----------------------------
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   // -----------------------------
   // FORM STATE
@@ -151,6 +82,45 @@ export default function CouponsOffers() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // -----------------------------
+  // FETCH COUPONS FROM API
+  // -----------------------------
+  const fetchCoupons = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/coupons");
+      const items = Array.isArray(res.data)
+        ? res.data
+        : res.data?.data || res.data?.coupons || [];
+      setCoupons(
+        items.map((c) => ({
+          id: c._id || c.id,
+          code: c.code || "",
+          description: c.description || "",
+          type: c.discount_type === "percentage" ? "percent" : "fixed",
+          value: c.discountValue || 0,
+          minPurchase: c.minPurchaseAmount || 0,
+          maxDiscount: c.maxDiscountAmount || 0,
+          usageLimit: c.usageLimit || 0,
+          perUser: c.perUserLimit || 1,
+          validFrom: formatDateInput(c.startDate),
+          validTo: formatDateInput(c.endDate),
+          scope: c.scope || "All",
+          usage: c.usedCount || 0,
+          active: typeof c.isActive === "boolean" ? c.isActive : true,
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to fetch coupons:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCoupons();
+  }, [fetchCoupons]);
 
   // -----------------------------
   // COUNTS
@@ -233,11 +203,11 @@ export default function CouponsOffers() {
     if (!code.trim()) return false;
     if (!description.trim()) return false;
     if (!type) return false;
-    if (!value || Number(value) <= 0) return false;
-    if (minPurchase === "") return false;
-    if (maxDiscount === "") return false;
-    if (usageLimit === "") return false;
-    if (perUser === "") return false;
+    if (value === "" || Number(value) < 0) return false;
+    if (minPurchase === "" || Number(minPurchase) < 0) return false;
+    if (maxDiscount === "" || Number(maxDiscount) < 0) return false;
+    if (usageLimit === "" || Number(usageLimit) < 0) return false;
+    if (perUser === "" || Number(perUser) < 0) return false;
     if (!validFrom) return false;
     if (!validTo) return false;
     if (!scope.trim()) return false;
@@ -247,7 +217,7 @@ export default function CouponsOffers() {
   // -----------------------------
   // ADD / UPDATE
   // -----------------------------
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -256,28 +226,31 @@ export default function CouponsOffers() {
     }
 
     const payload = {
-      id: editingId || uid(),
       code: code.trim().toUpperCase(),
       description: description.trim(),
-      type,
-      value: Number(value),
-      minPurchase: Number(minPurchase),
-      maxDiscount: Number(maxDiscount),
+      discount_type: type === "percent" ? "percentage" : "fixed_amount",
+      discountValue: Number(value),
+      minPurchaseAmount: Number(minPurchase),
+      maxDiscountAmount: Number(maxDiscount),
       usageLimit: Number(usageLimit),
-      perUser: Number(perUser),
-      validFrom,
-      validTo,
+      perUserLimit: Number(perUser),
+      startDate: validFrom,
+      endDate: validTo,
       scope,
-      usage: 0,
-      active: true,
+      isActive: true,
     };
 
-    setCoupons((prev) => {
-      if (!editingId) return [payload, ...prev];
-      return prev.map((c) => (c.id === editingId ? { ...c, ...payload } : c));
-    });
-
-    resetForm();
+    try {
+      if (editingId) {
+        await api.put(`/coupons/${editingId}`, payload);
+      } else {
+        await api.post("/coupons", payload);
+      }
+      resetForm();
+      fetchCoupons();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to save coupon.");
+    }
   };
 
   // -----------------------------
@@ -303,18 +276,28 @@ export default function CouponsOffers() {
   // -----------------------------
   // DELETE
   // -----------------------------
-  const onDelete = (id) => {
+  const onDelete = async (id) => {
     if (!window.confirm("Delete this coupon?")) return;
-    setCoupons((prev) => prev.filter((c) => c.id !== id));
+    try {
+      await api.delete(`/coupons/${id}`);
+      fetchCoupons();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete coupon.");
+    }
   };
 
   // -----------------------------
   // POWER TOGGLE
   // -----------------------------
-  const togglePower = (id) => {
-    setCoupons((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, active: !c.active } : c))
-    );
+  const togglePower = async (id) => {
+    const coupon = coupons.find((c) => c.id === id);
+    if (!coupon) return;
+    try {
+      await api.patch(`/coupons/status/${id}`, { isActive: !coupon.active });
+      fetchCoupons();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to toggle coupon status.");
+    }
   };
 
   // -----------------------------
@@ -367,10 +350,11 @@ export default function CouponsOffers() {
               <form onSubmit={onSubmit}>
                 {/* Code */}
                 <div className="mb-3">
-                  <label className="form-label fw-bold">
+                  <label className="form-label fw-bold" htmlFor="couponCode">
                     Code <span className="text-danger">*</span>
                   </label>
                   <input
+                    id="couponCode"
                     className="form-control coupon-input"
                     placeholder="E.G. SAVE20"
                     value={code}
@@ -580,19 +564,18 @@ export default function CouponsOffers() {
                       {filterStatus === "all"
                         ? `All (${counts.total})`
                         : filterStatus === "active"
-                        ? `Active (${counts.active})`
-                        : filterStatus === "inactive"
-                        ? `Inactive (${counts.inactive})`
-                        : `Expired (${counts.expired})`}
+                          ? `Active (${counts.active})`
+                          : filterStatus === "inactive"
+                            ? `Inactive (${counts.inactive})`
+                            : `Expired (${counts.expired})`}
                       <i className="bi bi-caret-down-fill ms-1" />
                     </button>
 
                     {openFilter && (
                       <div className="filter-menu">
                         <button
-                          className={`filter-item ${
-                            filterStatus === "all" ? "active" : ""
-                          }`}
+                          className={`filter-item ${filterStatus === "all" ? "active" : ""
+                            }`}
                           onClick={() => {
                             setFilterStatus("all");
                             setOpenFilter(false);
@@ -603,9 +586,8 @@ export default function CouponsOffers() {
                         </button>
 
                         <button
-                          className={`filter-item ${
-                            filterStatus === "active" ? "active" : ""
-                          }`}
+                          className={`filter-item ${filterStatus === "active" ? "active" : ""
+                            }`}
                           onClick={() => {
                             setFilterStatus("active");
                             setOpenFilter(false);
@@ -616,9 +598,8 @@ export default function CouponsOffers() {
                         </button>
 
                         <button
-                          className={`filter-item ${
-                            filterStatus === "inactive" ? "active" : ""
-                          }`}
+                          className={`filter-item ${filterStatus === "inactive" ? "active" : ""
+                            }`}
                           onClick={() => {
                             setFilterStatus("inactive");
                             setOpenFilter(false);
@@ -629,9 +610,8 @@ export default function CouponsOffers() {
                         </button>
 
                         <button
-                          className={`filter-item ${
-                            filterStatus === "expired" ? "active" : ""
-                          }`}
+                          className={`filter-item ${filterStatus === "expired" ? "active" : ""
+                            }`}
                           onClick={() => {
                             setFilterStatus("expired");
                             setOpenFilter(false);
@@ -651,6 +631,7 @@ export default function CouponsOffers() {
                   onClick={() => {
                     setSearch("");
                     setFilterStatus("all");
+                    fetchCoupons();
                   }}
                 >
                   <i className="bi bi-arrow-clockwise me-2" />
@@ -674,13 +655,20 @@ export default function CouponsOffers() {
                   </thead>
 
                   <tbody>
+                    {loading && (
+                      <tr>
+                        <td colSpan={7}>
+                          <div className="empty-state">Loading coupons...</div>
+                        </td>
+                      </tr>
+                    )}
                     {pageRows.map((c) => {
                       const expired = isExpired(c.validTo);
                       const status = expired
                         ? "Expired"
                         : c.active
-                        ? "Active"
-                        : "Inactive";
+                          ? "Active"
+                          : "Inactive";
 
                       return (
                         <tr key={c.id}>
@@ -743,13 +731,12 @@ export default function CouponsOffers() {
 
                           <td>
                             <span
-                              className={`status-pill ${
-                                status === "Active"
-                                  ? "s-active"
-                                  : status === "Inactive"
+                              className={`status-pill ${status === "Active"
+                                ? "s-active"
+                                : status === "Inactive"
                                   ? "s-inactive"
                                   : "s-expired"
-                              }`}
+                                }`}
                             >
                               {status}
                             </span>
@@ -790,7 +777,7 @@ export default function CouponsOffers() {
                       );
                     })}
 
-                    {pageRows.length === 0 ? (
+                    {!loading && pageRows.length === 0 ? (
                       <tr>
                         <td colSpan={7}>
                           <div className="empty-state">No coupons found.</div>

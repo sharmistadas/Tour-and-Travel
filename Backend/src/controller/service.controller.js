@@ -5,7 +5,7 @@ import { Service, InfoPage, Page, MultiImagePage, NewPage } from "../model/servi
 
 // ================= CREATE =================
 export const createService = async (req, res) => {
-    // console.log(req.body)
+  // console.log(req.body)
   try {
     const { title, description } = req.body;
 
@@ -112,9 +112,18 @@ export const createInfoPage = async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
 
+    let imageUrl = "";
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "info_pages",
+      });
+      imageUrl = result.secure_url;
+    }
+
     const info = await InfoPage.create({
       title,
       description,
+      image: imageUrl,
     });
 
     res.status(201).json(info);
@@ -160,6 +169,13 @@ export const updateInfoPage = async (req, res) => {
 
     if (!page) {
       return res.status(404).json({ error: "Page not found" });
+    }
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "info_pages",
+      });
+      page.image = result.secure_url;
     }
 
     page.title = title || page.title;
@@ -332,13 +348,23 @@ export const getMultiImagePageById = async (req, res) => {
 };
 
 // ================= UPDATE =================
-// Only title & description update
 export const updateMultiImagePage = async (req, res) => {
   try {
     const { title, description } = req.body;
 
     const page = await MultiImagePage.findById(req.params.id);
     if (!page) return res.status(404).json({ error: "Page not found" });
+
+    if (req.files && req.files.length > 0) {
+      const uploadedImages = [];
+      for (const file of req.files) {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: "multi_image_pages",
+        });
+        uploadedImages.push(result.secure_url);
+      }
+      page.images = uploadedImages;
+    }
 
     page.title = title || page.title;
     page.description = description || page.description;

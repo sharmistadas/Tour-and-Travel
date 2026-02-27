@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import "../styles/Booking.css";
+import axios from "axios";
 
 import {
   FiCalendar,
@@ -8,6 +9,8 @@ import {
   FiSearch,
   FiPlus,
   FiMoreHorizontal,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 
 import {
@@ -35,6 +38,13 @@ ChartJS.register(
   Filler,
 );
 
+const API_BASE = "http://localhost:5000/api/bookings";
+
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
+
 /* ✅ SPARK OPTIONS */
 const sparkOptions = {
   responsive: true,
@@ -48,11 +58,14 @@ const sparkOptions = {
 const overviewOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  layout: {
+    padding: { top: 10 },
+  },
   plugins: {
     legend: {
       position: "top",
       align: "start",
-      labels: { usePointStyle: true, padding: 25, boxWidth: 8 },
+      labels: { usePointStyle: true, padding: 40, boxWidth: 8, font: { size: 12 } },
     },
     tooltip: { backgroundColor: "#111827", padding: 12, displayColors: false },
   },
@@ -69,281 +82,265 @@ const overviewOptions = {
   },
 };
 
+/* ✅ MONTH LABELS */
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 const AdminBooking = () => {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [dateFilter, setDateFilter] = useState("Today");
   const [chartFilter, setChartFilter] = useState("Last 12 Months");
-  
+
   // State for mocked dropdowns
   const [showDateDropdown, setShowDateDropdown] = useState(false);
   const [showChartDropdown, setShowChartDropdown] = useState(false);
 
   const rowsPerPage = 8;
 
-  const [bookings, setBookings] = useState([
-    {
-      name: "Camellia Swan",
-      code: "BKG12345",
-      pkg: "Venice Dreams",
-      duration: "6 Days / 5 Nights",
-      date: "June 25 - June 30",
-      price: "$1,500",
-      status: "confirmed",
-    },
-    {
-      name: "Raphael Goodman",
-      code: "BKG12346",
-      pkg: "Safari Adventure",
-      duration: "8 Days / 7 Nights",
-      date: "Jun 25 - Jul 2",
-      price: "$3,200",
-      status: "pending",
-    },
-    {
-      name: "Ludwig Contessa",
-      code: "BKG12347",
-      pkg: "Alpine Escape",
-      duration: "7 Days / 6 Nights",
-      date: "Jun 26 - Jul 2",
-      price: "$2,100",
-      status: "confirmed",
-    },
-    {
-      name: "Armina Raul Reyes",
-      code: "BKG12348",
-      pkg: "Caribbean Cruise",
-      duration: "10 Days / 9 Nights",
-      date: "Jun 26 - Jul 5",
-      price: "$2,800",
-      status: "cancelled",
-    },
-    {
-      name: "James Dunn",
-      code: "BKG12349",
-      pkg: "Parisian Romance",
-      duration: "5 Days / 4 Nights",
-      date: "Jun 26 - Jun 30",
-      price: "$1,200",
-      status: "confirmed",
-    },
-    {
-      name: "Hillary Grey",
-      code: "BKG12350",
-      pkg: "Tokyo Cultural Adventure",
-      duration: "7 Days / 6 Nights",
-      date: "Jun 27 - Jul 3",
-      price: "$1,800",
-      status: "confirmed",
-    },
-    {
-      name: "Lucas O’connor",
-      code: "BKG12351",
-      pkg: "Greek Island Hopping",
-      duration: "10 Days / 9 Nights",
-      date: "Jun 28 - Jul 7",
-      price: "$2,500",
-      status: "pending",
-    },
-    {
-      name: "Layla Linch",
-      code: "BKG12352",
-      pkg: "Bali Beach Escape",
-      duration: "8 Days / 7 Nights",
-      date: "Jun 29 - Jul 6",
-      price: "$1,600",
-      status: "confirmed",
-    },
-    /* Page 2 Data */
-    {
-      name: "Oliver Smith",
-      code: "BKG12353",
-      pkg: "Swiss Escape",
-      duration: "6 Days / 5 Nights",
-      date: "Jul 2 - Jul 7",
-      price: "$2,200",
-      status: "confirmed",
-    },
-    {
-      name: "Sophia Lee",
-      code: "BKG12354",
-      pkg: "Maldives Retreat",
-      duration: "5 Days / 4 Nights",
-      date: "Jul 4 - Jul 8",
-      price: "$4,500",
-      status: "pending",
-    },
-    {
-      name: "Daniel Craig",
-      code: "BKG12355",
-      pkg: "London Explorer",
-      duration: "7 Days / 6 Nights",
-      date: "Jul 6 - Jul 13",
-      price: "$3,000",
-      status: "confirmed",
-    },
-    {
-      name: "Emma Watson",
-      code: "BKG12356",
-      pkg: "Paris Delight",
-      duration: "4 Days / 3 Nights",
-      date: "Jul 8 - Jul 11",
-      price: "$1,900",
-      status: "cancelled",
-    },
-    {
-      name: "Noah Brown",
-      code: "BKG12357",
-      pkg: "Dubai Luxury",
-      duration: "6 Days / 5 Nights",
-      date: "Jul 10 - Jul 15",
-      price: "$3,800",
-      status: "confirmed",
-    },
-    {
-      name: "Ava Martinez",
-      code: "BKG12358",
-      pkg: "Rome Adventure",
-      duration: "5 Days / 4 Nights",
-      date: "Jul 12 - Jul 17",
-      price: "$2,100",
-      status: "pending",
-    },
-    {
-      name: "William King",
-      code: "BKG12359",
-      pkg: "Thailand Tour",
-      duration: "8 Days / 7 Nights",
-      date: "Jul 14 - Jul 22",
-      price: "$2,700",
-      status: "confirmed",
-    },
-    {
-      name: "Mia Taylor",
-      code: "BKG12360",
-      pkg: "Bali Escape",
-      duration: "6 Days / 5 Nights",
-      date: "Jul 18 - Jul 24",
-      price: "$1,750",
-      status: "confirmed",
-    },
-  ]);
+  // API State
+  const [bookings, setBookings] = useState([]);
+  const [totalBookingsCount, setTotalBookingsCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    code: "",
-    pkg: "",
-    duration: "",
-    date: "",
-    price: "",
-    status: "confirmed",
+  // Stats State
+  const [stats, setStats] = useState({
+    totalBookings: 0,
+    totalParticipants: 0,
+    totalEarnings: 0,
+    topPackages: [],
+    tripsOverview: [],
   });
 
+  const searchTimerRef = useRef(null);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    travelerName: "",
+    packageId: "",
+    startDate: "",
+    endDate: "",
+    participants: 1,
+    pricePerDay: "",
+    userId: "",
+  });
+
+  // ─── Debounce search ───
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(searchTimerRef.current);
+  }, [search]);
+
+  // ─── Fetch bookings (server-side pagination + search) ───
+  const fetchBookings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/", {
+        params: {
+          page,
+          limit: rowsPerPage,
+          search: debouncedSearch,
+        },
+      });
+      if (res.data.success) {
+        setBookings(res.data.data || []);
+        setTotalPages(res.data.totalPages || 1);
+        setTotalBookingsCount(res.data.totalBookings || 0);
+      }
+    } catch (err) {
+      console.error("Failed to fetch bookings:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, debouncedSearch]);
+
+  // ─── Fetch stats ───
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await api.get("/stats");
+      if (res.data.success) {
+        setStats({
+          totalBookings: res.data.totalBookings || 0,
+          totalParticipants: res.data.totalParticipants || 0,
+          totalEarnings: res.data.totalEarnings || 0,
+          topPackages: res.data.topPackages || [],
+          tripsOverview: res.data.tripsOverview || [],
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch stats:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  // ─── Handle form input ───
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleAddBooking = () => {
-    if (!formData.name || !formData.pkg) {
-      alert("Please fill in at least Name and Package");
+  // ─── Create booking via API ───
+  const handleAddBooking = async () => {
+    if (!formData.travelerName || !formData.packageId) {
+      alert("Please fill in at least Traveler Name and Package ID");
       return;
     }
-    const newBooking = {
-      ...formData,
-      code: formData.code || `BKG${Math.floor(Math.random() * 10000)}`, // Auto-generate code if empty
-      date: formData.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), // Default to today
-    };
-    setBookings([newBooking, ...bookings]);
-    setFormData({
-      name: "",
-      code: "",
-      pkg: "",
-      duration: "",
-      date: "",
-      price: "",
-      status: "confirmed",
+    try {
+      const res = await api.post("/", {
+        travelerName: formData.travelerName,
+        packageId: formData.packageId,
+        userId: formData.userId || undefined,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        participants: Number(formData.participants) || 1,
+        pricePerDay: Number(formData.pricePerDay) || 0,
+      });
+      if (res.data.success) {
+        setFormData({
+          travelerName: "",
+          packageId: "",
+          startDate: "",
+          endDate: "",
+          participants: 1,
+          pricePerDay: "",
+          userId: "",
+        });
+        setShowForm(false);
+        fetchBookings();
+        fetchStats();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to create booking");
+    }
+  };
+
+  // ─── Update booking status ───
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await api.patch(`/status/${id}`, { status: newStatus });
+      if (res.data.success) {
+        fetchBookings();
+        fetchStats();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to update status");
+    }
+  };
+
+  // ─── Delete booking ───
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this booking?")) return;
+    try {
+      const res = await api.delete(`/${id}`);
+      if (res.data.success) {
+        fetchBookings();
+        fetchStats();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete booking");
+    }
+  };
+
+  // ─── Format helpers ───
+  const formatCurrency = (num) => {
+    if (!num && num !== 0) return "$0";
+    return "$" + Number(num).toLocaleString("en-US");
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
+
+  const formatNumber = (num) => {
+    if (!num && num !== 0) return "0";
+    return Number(num).toLocaleString("en-US");
+  };
+
+  // ─── Build chart data from stats ───
+  const buildTripsOverviewChart = () => {
+    const doneByMonth = {};
+    const cancelledByMonth = {};
+
+    (stats.tripsOverview || []).forEach((item) => {
+      const month = item._id?.month;
+      const status = item._id?.status;
+      if (!month) return;
+      if (status === "confirmed" || status === "completed") {
+        doneByMonth[month] = (doneByMonth[month] || 0) + item.count;
+      } else if (status === "cancelled") {
+        cancelledByMonth[month] = (cancelledByMonth[month] || 0) + item.count;
+      }
     });
-    setShowForm(false);
-  };
 
-  const filtered = bookings.filter(
-    (b) =>
-      b.name.toLowerCase().includes(search.toLowerCase()) ||
-      b.pkg.toLowerCase().includes(search.toLowerCase()),
-  );
+    const labels = MONTH_NAMES;
+    const doneData = labels.map((_, i) => doneByMonth[i + 1] || 0);
+    const cancelledData = labels.map((_, i) => cancelledByMonth[i + 1] || 0);
 
-  const totalPages = Math.ceil(filtered.length / rowsPerPage);
-  const paginated = filtered.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage,
-  );
-
-  const lineChart = {
-    labels: [
-      "Aug 12",
-      "Sep 15",
-      "Oct 20",
-      "Nov 5",
-      "Dec 10",
-      "Jan 15",
-      "Feb 20",
-      "Mar 25",
-      "Apr 30",
-      "May 15",
-      "Jun 20",
-      "Jul 25",
-    ],
-    datasets: [
-      {
-        label: "Done",
-        data: [
-          600, 1200, 1350, 1100, 1400, 1780, 1500, 1300, 1600, 1950, 1650, 1300,
-        ],
-        borderColor: "#3b82f6",
-        borderWidth: 3,
-        fill: true,
-        backgroundColor: (context) => {
-          const chart = context.chart;
-          const { ctx, chartArea } = chart;
-          if (!chartArea) return null;
-          const gradient = ctx.createLinearGradient(
-            0,
-            chartArea.top,
-            0,
-            chartArea.bottom,
-          );
-          gradient.addColorStop(0, "rgba(59,130,246,0.25)");
-          gradient.addColorStop(1, "rgba(59,130,246,0.02)");
-          return gradient;
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Done",
+          data: doneData,
+          borderColor: "#3b82f6",
+          borderWidth: 3,
+          fill: true,
+          backgroundColor: (context) => {
+            const chart = context.chart;
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return null;
+            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            gradient.addColorStop(0, "rgba(59,130,246,0.25)");
+            gradient.addColorStop(1, "rgba(59,130,246,0.02)");
+            return gradient;
+          },
+          tension: 0.5,
+          pointRadius: 0,
         },
-        tension: 0.5,
-        pointRadius: 0,
-      },
-      {
-        label: "Cancelled",
-        data: [400, 200, 600, 700, 500, 650, 550, 900, 650, 900, 750, 900],
-        borderColor: "#9ca3af",
-        borderWidth: 2,
-        borderDash: [6, 6],
-        tension: 0.5,
-        pointRadius: 0,
-      },
-    ],
+        {
+          label: "Cancelled",
+          data: cancelledData,
+          borderColor: "#9ca3af",
+          borderWidth: 2,
+          borderDash: [6, 6],
+          tension: 0.5,
+          pointRadius: 0,
+        },
+      ],
+    };
   };
 
-  const barChart = {
-    labels: ["Tokyo", "Bali", "Safari", "Greek"],
-    datasets: [
-      {
-        label: "Participants",
-        data: [650, 520, 408, 278],
-        backgroundColor: ["#2563eb", "#60a5fa", "#93c5fd", "#bfdbfe"],
-        borderRadius: 4,
-      },
-    ],
+  const buildBarChart = () => {
+    const pkgs = stats.topPackages || [];
+    return {
+      labels: pkgs.map((p) => p._id || "Unknown"),
+      datasets: [
+        {
+          label: "Participants",
+          data: pkgs.map((p) => p.totalParticipants || 0),
+          backgroundColor: ["#2563eb", "#60a5fa", "#93c5fd", "#bfdbfe"],
+          borderRadius: 4,
+        },
+      ],
+    };
   };
+
+  const lineChart = buildTripsOverviewChart();
+  const barChart = buildBarChart();
 
   const barOptions = {
     responsive: true,
@@ -364,6 +361,17 @@ const AdminBooking = () => {
     }
   };
 
+  // ─── Status display helper ───
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "confirmed": return "Confirmed";
+      case "pending": return "Pending";
+      case "cancelled": return "Cancelled";
+      case "completed": return "Completed";
+      default: return status;
+    }
+  };
+
   return (
     <div className="admin-booking">
       {/* <h1 className="page-heading">Booking</h1> */}
@@ -379,7 +387,7 @@ const AdminBooking = () => {
                 <span className="card-title">Total Booking</span>
                 <FiMoreHorizontal className="more-icon" />
               </div>
-              <h2 className="card-value">1,200</h2>
+              <h2 className="card-value">{formatNumber(stats.totalBookings)}</h2>
               <div className="card-footer-row">
                 <div className="trend-container">
                   <span className="positive">↗ +2.98%</span>
@@ -412,7 +420,7 @@ const AdminBooking = () => {
                 <span className="card-title">Total Participants</span>
                 <FiMoreHorizontal className="more-icon" />
               </div>
-              <h2 className="card-value">2,845</h2>
+              <h2 className="card-value">{formatNumber(stats.totalParticipants)}</h2>
               <div className="card-footer-row">
                 <div className="trend-container">
                   <span className="negative">↘ -1.45%</span>
@@ -445,7 +453,7 @@ const AdminBooking = () => {
                 <span className="card-title">Total Earnings</span>
                 <FiMoreHorizontal className="more-icon" />
               </div>
-              <h2 className="card-value">$14,795</h2>
+              <h2 className="card-value">{formatCurrency(stats.totalEarnings)}</h2>
               <div className="card-footer-row">
                 <div className="trend-container">
                   <span className="positive">↗ +3.75%</span>
@@ -475,20 +483,20 @@ const AdminBooking = () => {
             <div className="admin-booking-line-header">
               <h4>Trips Overview</h4>
               <div className="chart-filter-wrapper-blue">
-                <div 
-                  className="blue-btn-mock" 
+                <div
+                  className="blue-btn-mock"
                   onClick={() => setShowChartDropdown(!showChartDropdown)}
                   style={{ position: 'relative' }}
                 >
                   {chartFilter} <span className="arrow">∨</span>
                   {showChartDropdown && (
                     <div style={{
-                      position: 'absolute', top: '100%', right: 0, background: 'white', 
-                      color: 'black', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
+                      position: 'absolute', top: '100%', right: 0, background: 'white',
+                      color: 'black', boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       borderRadius: '8px', overflow: 'hidden', zIndex: 10, minWidth: '120px'
                     }}>
                       {['Last 12 Months', 'Last 6 Months', 'Last 30 Days'].map(opt => (
-                        <div 
+                        <div
                           key={opt}
                           style={{ padding: '8px 12px', cursor: 'pointer', fontSize: '12px' }}
                           onClick={(e) => {
@@ -537,39 +545,38 @@ const AdminBooking = () => {
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
-                  setPage(1);
                 }}
               />
             </div>
-            <div 
-              className="date-filter-btn" 
+            <div
+              className="date-filter-btn"
               onClick={() => setShowDateDropdown(!showDateDropdown)}
               style={{ position: 'relative' }}
             >
-               <FiCalendar className="cal-icon" /> {dateFilter} <span className="arrow">∨</span>
-               {showDateDropdown && (
-                    <div style={{
-                      position: 'absolute', top: '100%', right: 0, background: 'white', 
-                      color: 'black', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', 
-                      borderRadius: '8px', overflow: 'hidden', zIndex: 10, minWidth: '120px'
-                    }}>
-                      {['Today', 'This Week', 'This Month'].map(opt => (
-                        <div 
-                          key={opt}
-                          style={{ padding: '8px 12px', cursor: 'pointer', fontSize: '12px' }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDateFilter(opt);
-                            setShowDateDropdown(false);
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                        >
-                          {opt}
-                        </div>
-                      ))}
+              <FiCalendar className="cal-icon" /> {dateFilter} <span className="arrow">∨</span>
+              {showDateDropdown && (
+                <div style={{
+                  position: 'absolute', top: '100%', right: 0, background: 'white',
+                  color: 'black', boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  borderRadius: '8px', overflow: 'hidden', zIndex: 10, minWidth: '120px'
+                }}>
+                  {['Today', 'This Week', 'This Month'].map(opt => (
+                    <div
+                      key={opt}
+                      style={{ padding: '8px 12px', cursor: 'pointer', fontSize: '12px' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDateFilter(opt);
+                        setShowDateDropdown(false);
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#f3f4f6'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      {opt}
                     </div>
-                  )}
+                  ))}
+                </div>
+              )}
             </div>
             <button className="add-btn" onClick={() => setShowForm(!showForm)}>
               <FiPlus /> Add Booking
@@ -578,46 +585,36 @@ const AdminBooking = () => {
         </div>
 
         {showForm && (
-          <div className="booking-form" style={{ 
-            marginBottom: '20px', padding: '16px', background: '#f9f9f9', 
-            borderRadius: '8px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' 
-          }}>
-            <input 
-              name="name" value={formData.name} onChange={handleInputChange} 
-              placeholder="Customer Name" style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }} 
+          <div className="booking-form">
+            <input
+              name="travelerName" value={formData.travelerName} onChange={handleInputChange}
+              placeholder="Traveler Name"
             />
-            <input 
-              name="code" value={formData.code} onChange={handleInputChange} 
-              placeholder="Booking Code (Auto)" style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }} 
+            <input
+              name="userId" value={formData.userId} onChange={handleInputChange}
+              placeholder="User ID"
             />
-            <input 
-              name="pkg" value={formData.pkg} onChange={handleInputChange} 
-              placeholder="Package" style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }} 
+            <input
+              name="packageId" value={formData.packageId} onChange={handleInputChange}
+              placeholder="Package ID"
             />
-            <input 
-              name="duration" value={formData.duration} onChange={handleInputChange} 
-              placeholder="Duration" style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }} 
+            <input
+              name="startDate" value={formData.startDate} onChange={handleInputChange}
+              placeholder="Start Date (YYYY-MM-DD)" type="date"
             />
-            <input 
-              name="date" value={formData.date} onChange={handleInputChange} 
-              placeholder="Date (e.g. Jun 25)" style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }} 
+            <input
+              name="endDate" value={formData.endDate} onChange={handleInputChange}
+              placeholder="End Date (YYYY-MM-DD)" type="date"
             />
-            <input 
-              name="price" value={formData.price} onChange={handleInputChange} 
-              placeholder="Price (e.g. $1,500)" style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }} 
+            <input
+              name="participants" value={formData.participants} onChange={handleInputChange}
+              placeholder="Participants" type="number" min="1"
             />
-            <select 
-              name="status" value={formData.status} onChange={handleInputChange} 
-              style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-            >
-              <option value="confirmed">confirmed</option>
-              <option value="pending">pending</option>
-              <option value="cancelled">cancelled</option>
-            </select>
-            <button 
-              onClick={handleAddBooking}
-              style={{ padding: '8px', borderRadius: '4px', border: 'none', background: '#3b82f6', color: 'white', cursor: 'pointer', fontWeight: 500 }}
-            >
+            <input
+              name="pricePerDay" value={formData.pricePerDay} onChange={handleInputChange}
+              placeholder="Price Per Day" type="number"
+            />
+            <button onClick={handleAddBooking}>
               Save Booking
             </button>
           </div>
@@ -633,51 +630,118 @@ const AdminBooking = () => {
               <th>Date ↕</th>
               <th>Price ↕</th>
               <th>Status ↕</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {paginated.map((b, i) => (
-              <tr key={i}>
-                <td>{b.name}</td>
-                <td>{b.code}</td>
-                <td>{b.pkg}</td>
-                <td>{b.duration}</td>
-                <td>{b.date}</td>
-                <td>{b.price}</td>
-                <td>
-                  <span className={`status ${b.status}`}>{b.status === 'confirmed' ? 'Confirmed' : b.status === 'pending' ? 'Pending' : 'Cancelled'}</span>
+            {loading ? (
+              <tr>
+                <td colSpan="8" style={{ textAlign: "center", padding: "30px", color: "#9ca3af" }}>
+                  Loading bookings...
                 </td>
               </tr>
-            ))}
+            ) : bookings.length === 0 ? (
+              <tr>
+                <td colSpan="8" style={{ textAlign: "center", padding: "30px", color: "#9ca3af" }}>
+                  No bookings found
+                </td>
+              </tr>
+            ) : (
+              bookings.map((b) => (
+                <tr key={b._id}>
+                  <td>{b.travelerName}</td>
+                  <td>{b.bookingCode}</td>
+                  <td>{b.packageName || b.package?.title || "-"}</td>
+                  <td>{b.duration || "-"}</td>
+                  <td>{formatDate(b.startDate)} - {formatDate(b.endDate)}</td>
+                  <td>{formatCurrency(b.finalPrice || b.price)}</td>
+                  <td>
+                    <span className={`status ${b.status}`}>{getStatusLabel(b.status)}</span>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                      {b.status === "pending" && (
+                        <button
+                          onClick={() => handleStatusChange(b._id, "confirmed")}
+                          style={{
+                            padding: "3px 8px", fontSize: "11px", border: "none",
+                            borderRadius: "6px", cursor: "pointer", fontWeight: 600,
+                            background: "#d1fae5", color: "#059669"
+                          }}
+                        >
+                          Confirm
+                        </button>
+                      )}
+                      {(b.status === "pending" || b.status === "confirmed") && (
+                        <button
+                          onClick={() => handleStatusChange(b._id, "cancelled")}
+                          style={{
+                            padding: "3px 8px", fontSize: "11px", border: "none",
+                            borderRadius: "6px", cursor: "pointer", fontWeight: 600,
+                            background: "#fee2e2", color: "#dc2626"
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      {b.status === "confirmed" && (
+                        <button
+                          onClick={() => handleStatusChange(b._id, "completed")}
+                          style={{
+                            padding: "3px 8px", fontSize: "11px", border: "none",
+                            borderRadius: "6px", cursor: "pointer", fontWeight: 600,
+                            background: "#dbeafe", color: "#2563eb"
+                          }}
+                        >
+                          Complete
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(b._id)}
+                        style={{
+                          padding: "3px 8px", fontSize: "11px", border: "none",
+                          borderRadius: "6px", cursor: "pointer", fontWeight: 600,
+                          background: "#f3f4f6", color: "#6b7280"
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
 
-        {/* PAGINATION LOGIC REMAINS IDENTICAL */}
+        {/* PAGINATION */}
         <div className="pagination-container">
           <div className="pagination-info">
-            Showing <b>{rowsPerPage}</b> out of <b>{filtered.length}</b>
+            Showing <b>{bookings.length}</b> out of <b>{totalBookingsCount}</b>
           </div>
           <div className="admin-booking-pagination">
-            <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-              Previous
-            </button>
             <button
-              className={page === 1 ? "active" : ""}
-              onClick={() => setPage(1)}
+              className="prev-btn"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
             >
-              1
+              <FiChevronLeft /> Previous
             </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                className={page === p ? "active" : ""}
+                onClick={() => setPage(p)}
+              >
+                {p}
+              </button>
+            ))}
             <button
-              className={page === 2 ? "active" : ""}
-              onClick={() => setPage(2)}
-            >
-              2
-            </button>
-            <button
+              className="next-btn"
               disabled={page === totalPages}
               onClick={() => setPage(page + 1)}
             >
-              Next
+              Next <FiChevronRight />
             </button>
           </div>
         </div>

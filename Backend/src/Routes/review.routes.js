@@ -16,24 +16,24 @@ import { userAuth } from "../middleware/userAuthMiddleware.js";
 const router = express.Router();
 
 //public 
-router.get( "/packages/:packageId", getPackageReviews );
+router.get("/packages/:packageId", getPackageReviews);
 
 //user can create review for a package, but only one review per package
-router.post( "/packages/:packageId", userAuth , createReview );
+router.post("/packages/:packageId", userAuth, createReview);
 
 //admin can get all reviews, including pending ones, and update their status (approve/reject)
 
-router.get( "/", protectAdmin, getAllReviewsAdmin );
+router.get("/", protectAdmin, getAllReviewsAdmin);
 
 
-router.get( "/pending", protectAdmin, getPendingReviews );
+router.get("/pending", protectAdmin, getPendingReviews);
 
 router.patch("/:id", protectAdmin, updateReviewStatus);
 
-router.get("/ratings-summary", protectAdmin , getRatingsSummary);
+router.get("/ratings-summary", protectAdmin, getRatingsSummary);
 
 //admin can delete any review, user can delete their own review
-router.delete( "/:id",
+router.delete("/:id",
   (req, res, next) => {
     if (req.cookies?.adminToken) {
       return protectAdmin(req, res, next);

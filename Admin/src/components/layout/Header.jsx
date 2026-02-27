@@ -16,7 +16,11 @@ const Header = ({ toggleSidebar }) => {
     const loadAdmin = () => {
       const cached = localStorage.getItem('adminUser');
       if (cached) {
-        try { setAdmin(JSON.parse(cached)); } catch { /* ignore */ }
+        try {
+          setAdmin(JSON.parse(cached));
+        } catch (e) {
+          console.error("Failed to parse adminUser:", e);
+        }
       }
     };
     loadAdmin();
@@ -42,13 +46,14 @@ const Header = ({ toggleSidebar }) => {
   }, []);
 
   const getInitials = () => {
-    const f = (admin?.firstName || '')[0] || '';
+    const f = (admin?.firstName || admin?.name || '')[0] || '';
     const l = (admin?.lastName || '')[0] || '';
     return (f + l).toUpperCase() || 'AD';
   };
 
   const getDisplayName = () => {
     if (admin?.firstName) return `${admin.firstName} ${admin.lastName || ''}`.trim();
+    if (admin?.name) return admin.name;
     return 'Admin User';
   };
 

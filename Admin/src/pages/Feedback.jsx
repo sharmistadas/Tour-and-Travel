@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -9,8 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import "../styles/feedback.css";
-
-const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+import api from "../utils/api";
 
 const PACKAGES = [
   "All Packages",
@@ -43,189 +43,191 @@ function starFillWidth(rating) {
 }
 
 export default function FeedbackPage() {
+  const navigate = useNavigate();
+  // -----------------------------
+  // LOADING STATE
+  // -----------------------------
+  const [loading, setLoading] = useState(false);
+
+  // -----------------------------
+  // ADMIN USER INFO
+  // -----------------------------
+  const [adminUser, setAdminUser] = useState(() => {
+    const stored = localStorage.getItem("adminUser");
+    return stored ? JSON.parse(stored) : { name: "Admin User", role: "Administrator" };
+  });
+
   // -----------------------------
   // GRAPH CONTROLS
   // -----------------------------
   const [graphRange, setGraphRange] = useState("month");
 
   // -----------------------------
-  // GRAPH DATA
+  // FEEDBACK DATA (from API) — declared early so graphData can reference it
   // -----------------------------
+  const [feedbacks, setFeedbacks] = useState([]);
+
+  // -----------------------------
+  // GRAPH DATA (computed from fetched reviews)
+  // -----------------------------
+  const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
   const graphData = useMemo(() => {
+    if (feedbacks.length === 0) return [];
+
     if (graphRange === "week") {
-      return [
-        { label: "Mon", Positive: 92, Negative: 62 },
-        { label: "Tue", Positive: 88, Negative: 55 },
-        { label: "Wed", Positive: 101, Negative: 72 },
-        { label: "Thu", Positive: 96, Negative: 61 },
-        { label: "Fri", Positive: 110, Negative: 80 },
-        { label: "Sat", Positive: 98, Negative: 64 },
-        { label: "Sun", Positive: 104, Negative: 70 },
-      ];
+      // Group reviews by day of week (last 7 days)
+      const buckets = DAY_NAMES.map((label) => ({ label, Positive: 0, Negative: 0 }));
+      const now = new Date();
+      const weekAgo = new Date(now);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+
+      feedbacks.forEach((f) => {
+        if (!f.date) return;
+        const d = new Date(f.date);
+        if (d >= weekAgo && d <= now) {
+          const dayIdx = d.getDay(); // 0=Sun
+          if (f.rating >= 3.5) buckets[dayIdx].Positive++;
+          else buckets[dayIdx].Negative++;
+        }
+      });
+
+      // Reorder so Monday comes first
+      return [...buckets.slice(1), buckets[0]];
     }
 
-    return [
-      { label: "Aug 27", Positive: 930, Negative: 680 },
-      { label: "Sep 27", Positive: 880, Negative: 760 },
-      { label: "Oct 27", Positive: 1060, Negative: 640 },
-      { label: "Nov 27", Positive: 990, Negative: 560 },
-      { label: "Dec 27", Positive: 870, Negative: 650 },
-      { label: "Jan 28", Positive: 780, Negative: 900 },
-      { label: "Feb 28", Positive: 920, Negative: 720 },
-      { label: "Mar 28", Positive: 1040, Negative: 650 },
-      { label: "Apr 28", Positive: 1150, Negative: 790 },
-      { label: "May 28", Positive: 1030, Negative: 620 },
-      { label: "Jun 28", Positive: 900, Negative: 510 },
-      { label: "Jul 28", Positive: 1000, Negative: 660 },
-    ];
-  }, [graphRange]);
+    // "month" — Group reviews by month (last 12 months)
+    const now = new Date();
+    const buckets = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      const label = `${MONTH_NAMES[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
+      buckets.push({ key, label, Positive: 0, Negative: 0 });
+    }
+
+    feedbacks.forEach((f) => {
+      if (!f.date) return;
+      const d = new Date(f.date);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      const bucket = buckets.find((b) => b.key === key);
+      if (bucket) {
+        if (f.rating >= 3.5) bucket.Positive++;
+        else bucket.Negative++;
+      }
+    });
+
+    return buckets.map(({ label, Positive, Negative }) => ({ label, Positive, Negative }));
+  }, [graphRange, feedbacks]);
 
   // -----------------------------
-  // RATINGS DATA
+  // RATINGS DATA (from API)
   // -----------------------------
-  const ratings = useMemo(() => {
-    return {
-      overall: 4.5,
-      label: "Excellent",
-      from: 1250,
-      items: [
-        { name: "Accommodation", rating: 4.6 },
-        { name: "Tour Guides", rating: 4.8 },
-        { name: "Itinerary", rating: 4.4 },
-        { name: "Customer Service", rating: 4.7 },
-        { name: "Value for Money", rating: 4.3 },
-        { name: "Safety", rating: 4.5 },
-        { name: "Transportation", rating: 4.5 },
-        { name: "Food", rating: 4.2 },
-      ],
-    };
+  const [ratings, setRatings] = useState({
+    overall: 0,
+    label: "",
+    from: 0,
+    items: [],
+  });
+
+  const fetchRatingsSummary = useCallback(async () => {
+    try {
+      const res = await api.get("/reviews/ratings-summary");
+      const data = res.data?.data || res.data || {};
+      const overall = data.overall || data.averageRating || 0;
+      const totalReviews = data.totalReviews || data.from || data.count || 0;
+      let label = "";
+      if (overall >= 4.5) label = "Excellent";
+      else if (overall >= 4) label = "Very Good";
+      else if (overall >= 3.5) label = "Good";
+      else if (overall >= 3) label = "Average";
+      else label = "Below Average";
+
+      const items = Array.isArray(data.items || data.categories)
+        ? (data.items || data.categories).map((r) => ({
+          name: r.name || r.category || "",
+          rating: r.rating || r.average || 0,
+        }))
+        : [
+          { name: "Accommodation", rating: data.accommodation || 0 },
+          { name: "Tour Guides", rating: data.tourGuides || 0 },
+          { name: "Itinerary", rating: data.itinerary || 0 },
+          { name: "Customer Service", rating: data.customerService || 0 },
+          { name: "Value for Money", rating: data.valueForMoney || 0 },
+          { name: "Safety", rating: data.safety || 0 },
+          { name: "Transportation", rating: data.transportation || 0 },
+          { name: "Food", rating: data.food || 0 },
+        ].filter((r) => r.rating > 0);
+
+      setRatings({ overall, label, from: totalReviews, items });
+    } catch (err) {
+      console.error("Failed to fetch ratings summary:", err);
+    }
   }, []);
 
-  // -----------------------------
-  // FEEDBACK DATA
-  // -----------------------------
-  const [feedbacks, setFeedbacks] = useState([
-    {
-      id: uid(),
-      name: "Camellia Swan",
-      packageName: "Venice Dreams",
-      rating: 4.5,
-      text:
-        "The Venice Dreams package was fantastic! The gondola ride was magical, and the guided tours were very informative.",
-      date: "2026-07-01",
-      initials: "CS",
-    },
-    {
-      id: uid(),
-      name: "Raphael Goodman",
-      packageName: "Safari Adventure",
-      rating: 5,
-      text:
-        "A well-organized Safari Adventure with knowledgeable guides, unforgettable close encounters with the Big Five.",
-      date: "2026-07-03",
-      initials: "RG",
-    },
-    {
-      id: uid(),
-      name: "Ludwig Contessa",
-      packageName: "Alpine Escape",
-      rating: 4,
-      text:
-        "The Alpine Escape tour offered stunning Swiss Alps views, top-notch accommodations, and a perfect mix.",
-      date: "2026-07-04",
-      initials: "LC",
-    },
-    {
-      id: uid(),
-      name: "Armina Raul Meyes",
-      packageName: "Caribbean Cruise",
-      rating: 3.5,
-      text:
-        "The Caribbean Cruise featured beautiful destinations, excellent food, friendly staff, and luxury amenities.",
-      date: "2026-07-05",
-      initials: "AR",
-    },
-    {
-      id: uid(),
-      name: "James Dunn",
-      packageName: "Parisian Romance",
-      rating: 5,
-      text:
-        "The Parisian Romance package exceeded expectations with fantastic Eiffel Tower views and a charming hotel.",
-      date: "2026-07-06",
-      initials: "JD",
-    },
-    {
-      id: uid(),
-      name: "Sophia Lee",
-      packageName: "Tokyo Cultural Adventure",
-      rating: 4.5,
-      text:
-        "Tokyo Cultural Adventure offered deep insights into Japanese culture with great temple visits.",
-      date: "2026-07-07",
-      initials: "SL",
-    },
-    {
-      id: uid(),
-      name: "Michael Smith",
-      packageName: "Greek Island Hopping",
-      rating: 4,
-      text:
-        "Greek Island Hopping tour was wonderful with unique island experiences and excellent accommodations.",
-      date: "2026-07-09",
-      initials: "MS",
-    },
-    {
-      id: uid(),
-      name: "Emily Davis",
-      packageName: "Bali Beach Escape",
-      rating: 5,
-      text:
-        "Bali Beach Escape was a dream with stunning beachfront villa, relaxing spa treatments, and yoga sessions.",
-      date: "2026-07-10",
-      initials: "ED",
-    },
-    {
-      id: uid(),
-      name: "Lucas O'connor",
-      packageName: "Greek Island Hopping",
-      rating: 4.5,
-      text:
-        "Very smooth tour and the planning was excellent. Hotels were clean and guides were friendly.",
-      date: "2026-06-28",
-      initials: "LO",
-    },
-    {
-      id: uid(),
-      name: "Zaïre Dorwart",
-      packageName: "Bali Beach Escape",
-      rating: 4,
-      text:
-        "Nice experience. Beaches were amazing and overall the service was professional.",
-      date: "2026-06-29",
-      initials: "ZD",
-    },
-    {
-      id: uid(),
-      name: "Hilory Grey",
-      packageName: "Tokyo Cultural Adventure",
-      rating: 4.2,
-      text:
-        "Great city experience, the itinerary was balanced. Would recommend for first time visitors.",
-      date: "2026-06-30",
-      initials: "HG",
-    },
-  ]);
+
+
+  const getInitials = (name) => {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const fetchReviews = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/reviews");
+      const items = Array.isArray(res.data)
+        ? res.data
+        : res.data?.data || res.data?.reviews || [];
+      setFeedbacks(
+        items.map((r) => ({
+          id: r._id || r.id,
+          name: r.userName || r.user?.name || r.name || "Anonymous",
+          packageName: r.packageName || r.package?.title || r.packageTitle || "",
+          rating: r.rating || 0,
+          text: r.comment || r.text || r.review || r.feedback || "",
+          date: r.createdAt || r.date || "",
+          initials: getInitials(r.userName || r.user?.name || r.name || ""),
+          status: r.status || "pending",
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to fetch reviews:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch on mount
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    fetchReviews();
+    fetchRatingsSummary();
+  }, [fetchReviews, fetchRatingsSummary]);
 
   // -----------------------------
   // DELETE CONFIRM STATE
   // -----------------------------
   const [deleteId, setDeleteId] = useState(null);
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteId) return;
-    setFeedbacks((prev) => prev.filter((f) => f.id !== deleteId));
-    setDeleteId(null);
+    try {
+      await api.delete(`/reviews/${deleteId}`);
+      setDeleteId(null);
+      fetchReviews();
+      fetchRatingsSummary();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete feedback.");
+      setDeleteId(null);
+    }
   };
 
   // -----------------------------
@@ -273,23 +275,7 @@ export default function FeedbackPage() {
       <div className="container-fluid py-4">
         {/* TOP HEADER */}
         <div className="fb-topbar">
-          <div className="fb-title">Feedback</div>
-
-          <div className="fb-right">
-            <button className="fb-icon-btn" type="button" title="Notifications">
-              <i className="bi bi-bell" />
-              <span className="fb-dot" />
-            </button>
-
-            <button className="fb-profile" type="button">
-              <div className="fb-avatar" />
-              <div className="fb-profile-info d-none d-sm-block">
-                <div className="fb-name">Ruben Herwitz</div>
-                <div className="fb-role">Admin</div>
-              </div>
-              <i className="bi bi-chevron-down d-none d-sm-inline" />
-            </button>
-          </div>
+          <div className="fb-title">Feedback Management</div>
         </div>
 
         {/* TOP GRID */}
@@ -504,7 +490,13 @@ export default function FeedbackPage() {
               </div>
             ))}
 
-            {pageCards.length === 0 ? (
+            {loading && pageCards.length === 0 ? (
+              <div className="col-12">
+                <div className="fb-empty">Loading reviews...</div>
+              </div>
+            ) : null}
+
+            {!loading && pageCards.length === 0 ? (
               <div className="col-12">
                 <div className="fb-empty">No feedback found.</div>
               </div>

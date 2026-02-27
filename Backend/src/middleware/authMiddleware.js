@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 
 export const protectAdmin = async (req, res, next) => {
   try {
-    // Check cookie first, then Authorization header
     let token = req.cookies.adminToken;
 
     if (!token && req.headers.authorization?.startsWith("Bearer ")) {

@@ -40,6 +40,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts";
+import api from "../utils/api";
 import "../styles/Dashboard.css";
 
 /* ═══════════════════════════════════════════════
@@ -111,7 +112,61 @@ const Dashboard = () => {
   const [calYear, setCalYear] = useState(now.getFullYear());
   const [calMonth, setCalMonth] = useState(now.getMonth());
   const [selectedDate, setSelectedDate] = useState(now.getDate());
-  const [analysisMode, setAnalysisMode] = useState("Day"); // Day | Week | Month
+  const [analysisMode, setAnalysisMode] = useState("Week"); // Day | Week | Month
+
+  /* ── API Data States ── */
+  const [overviewData, setOverviewData] = useState(null);
+  const [revenueStats, setRevenueStats] = useState([]);
+  const [topDests, setTopDests] = useState([]);
+  const [recentBkngs, setRecentBkngs] = useState([]);
+  const [upcomingBkngs, setUpcomingBkngs] = useState([]);
+  const [recentActs, setRecentActs] = useState([]);
+  const [pkgs, setPkgs] = useState([]);
+  const [calendarEvts, setCalendarEvts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [
+          overviewRes,
+          revenueRes,
+          topDestRes,
+          recentBkRes,
+          upcomingRes,
+          activityRes,
+          packageRes,
+          calendarRes
+        ] = await Promise.all([
+          api.get("/dashboard/overview"),
+          api.get("/dashboard/revenue"),
+          api.get("/dashboard/top-destinations"),
+          api.get("/dashboard/recent-bookings"),
+          api.get("/dashboard/upcoming-trips"),
+          api.get("/dashboard/recent-activity"),
+          api.get("/dashboard/travel-packages"),
+          api.get("/dashboard/booking-calender")
+        ]);
+
+        if (overviewRes.data.success) setOverviewData(overviewRes.data.data);
+        if (revenueRes.data.success) setRevenueStats(revenueRes.data.currentWeek.days);
+        if (topDestRes.data.success) setTopDests(topDestRes.data.data);
+        if (recentBkRes.data.success) setRecentBkngs(recentBkRes.data.data);
+        if (upcomingRes.data.success) setUpcomingBkngs(upcomingRes.data.data);
+        if (activityRes.data.success) setRecentActs(activityRes.data.data);
+        if (packageRes.data.success) setPkgs(packageRes.data.data);
+        if (calendarRes.data.success) setCalendarEvts(calendarRes.data.data);
+
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const calWeeks = useMemo(() => buildCalendarWeeks(calYear, calMonth), [calYear, calMonth]);
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
@@ -165,23 +220,23 @@ const Dashboard = () => {
   const stats = [
     {
       title: "Total Booking",
-      value: periodMetrics.bookings.toLocaleString(),
-      change: pctChange(periodMetrics.bookings, prevPeriodMetrics.bookings),
-      trend: periodMetrics.bookings >= prevPeriodMetrics.bookings ? "up" : "down",
+      value: overviewData ? overviewData.totalBookings.toLocaleString() : "0",
+      change: "+0.00%",
+      trend: "up",
       icon: <FiCalendar size={20} />, bg: "#EEF2FF", color: "#4F46E5",
     },
     {
-      title: "Total New Customers",
-      value: periodMetrics.customers.toLocaleString(),
-      change: pctChange(periodMetrics.customers, prevPeriodMetrics.customers),
-      trend: periodMetrics.customers >= prevPeriodMetrics.customers ? "up" : "down",
+      title: "Total Packages",
+      value: overviewData ? overviewData.totalPackages.toLocaleString() : "0",
+      change: "+0.00%",
+      trend: "up",
       icon: <FiUsers size={20} />, bg: "#D1FAE5", color: "#10B981",
     },
     {
       title: "Total Earnings",
-      value: `$${periodMetrics.earnings.toLocaleString()}`,
-      change: pctChange(periodMetrics.earnings, prevPeriodMetrics.earnings),
-      trend: periodMetrics.earnings >= prevPeriodMetrics.earnings ? "up" : "down",
+      value: overviewData ? `$${overviewData.totalEarnings.toLocaleString()}` : "$0",
+      change: "+0.00%",
+      trend: "up",
       icon: <FiDollarSign size={20} />, bg: "#FEF3C7", color: "#F59E0B",
     },
   ];
@@ -194,10 +249,9 @@ const Dashboard = () => {
     return `${mName} ${calYear}`;
   }, [analysisMode, selectedDate, calMonth, calYear, selectedRange]);
 
-  /* ── Revenue chart that responds to calendar ── */
-  const revenueData = useMemo(() => {
+  /* ── Mock Revenue fallback ── */
+  const revenueDataMock = useMemo(() => {
     if (analysisMode === "Day") {
-      // Show hourly breakdown (8 AM – 6 PM)
       const seed = calYear * 10000 + (calMonth + 1) * 100 + selectedDate;
       const rng = seededRand(seed + 999);
       return ["8AM", "9AM", "10AM", "11AM", "12PM", "1PM", "2PM", "3PM", "4PM", "5PM", "6PM"].map(h => ({
@@ -212,7 +266,6 @@ const Dashboard = () => {
       }
       return days;
     }
-    // Month — show weekly totals
     const weekLabels = ["Wk 1", "Wk 2", "Wk 3", "Wk 4", "Wk 5"];
     const result = [];
     let wk = 0;
@@ -225,7 +278,18 @@ const Dashboard = () => {
     return result;
   }, [analysisMode, selectedDate, calYear, calMonth, selectedRange, daysInMonth]);
 
-  const maxRevenue = Math.max(...revenueData.map(r => r.revenue), 100);
+  /* ── Revenue chart data ── */
+  const chartData = useMemo(() => {
+    if (revenueStats && revenueStats.length > 0) {
+      return revenueStats.map(d => ({
+        day: d.day,
+        revenue: d.revenue
+      }));
+    }
+    return revenueDataMock;
+  }, [revenueStats, revenueDataMock]);
+
+  const maxRevenue = Math.max(...chartData.map(r => r.revenue), 100);
   const yMax = Math.ceil(maxRevenue / 200) * 200;
   const yTicks = Array.from({ length: 5 }, (_, i) => Math.round(yMax / 4 * i));
 
@@ -236,31 +300,45 @@ const Dashboard = () => {
     return set;
   }, [selectedRange]);
 
-  // ─── Destinations (unchanged) ───
-  const [selectedDestMonth, setSelectedDestMonth] = useState("This Month");
-  const destinationsMap = {
-    "This Month": [
+  // ─── Destinations ───
+  const destinations = useMemo(() => {
+    if (topDests && topDests.length > 0) {
+      const colors = ["#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#DBEAFE"];
+      const total = topDests.reduce((sum, d) => sum + d.totalBookings, 0);
+      return topDests.map((d, i) => ({
+        name: d._id || "Unknown",
+        pct: total > 0 ? Math.round((d.totalBookings / total) * 100) : 0,
+        people: `${d.totalBookings} Bookings`,
+        color: colors[i % colors.length]
+      }));
+    }
+    return [
       { name: "Tokyo, Japan", pct: 35, people: "2,458 Participants", color: "#3B82F6" },
       { name: "Sydney, Australia", pct: 28, people: "2,458 Participants", color: "#60A5FA" },
       { name: "Paris, France", pct: 22, people: "2,458 Participants", color: "#93C5FD" },
       { name: "Venice, Italy", pct: 15, people: "2,458 Participants", color: "#BFDBFE" },
-    ],
-    "Last Month": [
-      { name: "Paris, France", pct: 40, people: "3,100 Participants", color: "#3B82F6" },
-      { name: "Tokyo, Japan", pct: 25, people: "2,000 Participants", color: "#60A5FA" },
-      { name: "Rome, Italy", pct: 20, people: "1,800 Participants", color: "#93C5FD" },
-      { name: "Dubai, UAE", pct: 15, people: "1,200 Participants", color: "#BFDBFE" },
-    ],
-  };
-  const destinations = destinationsMap[selectedDestMonth];
+    ];
+  }, [topDests]);
 
   /* ── Upcoming Trips ── */
-  const [upcomingTrips, setUpcomingTrips] = useState([
-    { tag: "Romantic Getaway", loc: "Paris, France", date: "5 - 10 July", users: "+9", img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=120&h=80&fit=crop" },
-    { tag: "Cultural Exploration", loc: "Tokyo, Japan", date: "12 - 19 July", users: "+17", img: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=120&h=80&fit=crop", active: true },
-    { tag: "Adventure Tour", loc: "Sydney, Australia", date: "15 - 24 July", users: "+12", img: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=120&h=80&fit=crop" },
-    { tag: "City Highlights", loc: "New York, USA", date: "20 - 25 July", users: "+22", img: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=120&h=80&fit=crop" },
-  ]);
+  const displayUpcomingTrips = useMemo(() => {
+    if (upcomingBkngs && upcomingBkngs.length > 0) {
+      return upcomingBkngs.map((t, i) => ({
+        tag: t.package?.title || "Trip",
+        loc: t.package?.destination || "Unknown Location",
+        date: new Date(t.startDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }) + " - " + new Date(t.endDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }),
+        users: `+${t.participants || 0}`,
+        img: t.package?.thumbnailImage || "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=120&h=80&fit=crop",
+        active: i === 0
+      }));
+    }
+    return [
+      { tag: "Romantic Getaway", loc: "Paris, France", date: "5 - 10 July", users: "+9", img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=120&h=80&fit=crop" },
+      { tag: "Cultural Exploration", loc: "Tokyo, Japan", date: "12 - 19 July", users: "+17", img: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=120&h=80&fit=crop", active: true },
+      { tag: "Adventure Tour", loc: "Sydney, Australia", date: "15 - 24 July", users: "+12", img: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=120&h=80&fit=crop" },
+      { tag: "City Highlights", loc: "New York, USA", date: "20 - 25 July", users: "+22", img: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=120&h=80&fit=crop" },
+    ];
+  }, [upcomingBkngs]);
   const [showTripForm, setShowTripForm] = useState(false);
   const [tripForm, setTripForm] = useState({ tag: "", loc: "", date: "", users: "" });
 
@@ -291,38 +369,91 @@ const Dashboard = () => {
   ];
 
   /* ── Travel Packages ── */
-  const travelPackages = [
-    { title: "Cultural Exploration", dest: "Seoul, South Korea", dur: "10 Days / 9 Nights", price: "$2,100", img: "https://images.unsplash.com/photo-1534274867514-d5b47ef89ed7?w=300&h=180&fit=crop" },
-    { title: "Venice Dreams", dest: "Venice, Italy", dur: "6 Days / 5 Nights", price: "$1,500", img: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=300&h=180&fit=crop" },
-    { title: "Safari Adventure", dest: "Serengeti, Tanzania", dur: "8 Days / 7 Nights", price: "$3,200", img: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=300&h=180&fit=crop" },
-  ];
+  const travelPackagesList = useMemo(() => {
+    if (pkgs && pkgs.length > 0) {
+      return pkgs.map(p => ({
+        title: p.category || "Tour",
+        dest: p.title || p.location,
+        dur: `${p.durationDays} Days / ${p.durationNights} Nights`,
+        price: `$${p.price.toLocaleString()}`,
+        img: p.thumbnailImage || "https://images.unsplash.com/photo-1534274867514-d5b47ef89ed7?w=300&h=180&fit=crop"
+      }));
+    }
+    return [
+      { title: "Cultural Exploration", dest: "Seoul, South Korea", dur: "10 Days / 9 Nights", price: "$2,100", img: "https://images.unsplash.com/photo-1534274867514-d5b47ef89ed7?w=300&h=180&fit=crop" },
+      { title: "Venice Dreams", dest: "Venice, Italy", dur: "6 Days / 5 Nights", price: "$1,500", img: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=300&h=180&fit=crop" },
+      { title: "Safari Adventure", dest: "Serengeti, Tanzania", dur: "8 Days / 7 Nights", price: "$3,200", img: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=300&h=180&fit=crop" },
+    ];
+  }, [pkgs]);
 
   /* ── Recent Bookings ── */
-  const bookings = [
-    { name: "Camellia Swan", pkg: "Venice Dreams", dur: "6D5N", date: "Jun 25 - Jun 30", price: "$1,500", status: "Confirmed" },
-    { name: "Raphael Goodman", pkg: "Safari Adventure", dur: "8D7N", date: "Jun 25 - Jul 2", price: "$3,200", status: "Pending" },
-    { name: "Ludwig Contessa", pkg: "Alpine Escape", dur: "7D6N", date: "Jun 26 - Jul 2", price: "$2,100", status: "Confirmed" },
-    { name: "Armina Raul Meyes", pkg: "Caribbean Cruise", dur: "10D9N", date: "Jun 26 - Jul 5", price: "$2,800", status: "Cancelled" },
-    { name: "James Dunn", pkg: "Parisian Romance", dur: "5D4N", date: "Jun 26 - Jun 30", price: "$1,200", status: "Confirmed" },
-  ];
+  const bookingsList = useMemo(() => {
+    if (recentBkngs && recentBkngs.length > 0) {
+      return recentBkngs.map(b => ({
+        name: b.travelerName,
+        pkg: b.packageName,
+        dur: b.duration || "N/A",
+        date: new Date(b.startDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }) + " - " + new Date(b.endDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }),
+        price: `$${b.price.toLocaleString()}`,
+        status: b.status.charAt(0).toUpperCase() + b.status.slice(1)
+      }));
+    }
+    return [
+      { name: "Camellia Swan", pkg: "Venice Dreams", dur: "6D5N", date: "Jun 25 - Jun 30", price: "$1,500", status: "Confirmed" },
+      { name: "Raphael Goodman", pkg: "Safari Adventure", dur: "8D7N", date: "Jun 25 - Jul 2", price: "$3,200", status: "Pending" },
+      { name: "Ludwig Contessa", pkg: "Alpine Escape", dur: "7D6N", date: "Jun 26 - Jul 2", price: "$2,100", status: "Confirmed" },
+      { name: "Armina Raul Meyes", pkg: "Caribbean Cruise", dur: "10D9N", date: "Jun 26 - Jul 5", price: "$2,800", status: "Cancelled" },
+      { name: "James Dunn", pkg: "Parisian Romance", dur: "5D4N", date: "Jun 26 - Jun 30", price: "$1,200", status: "Confirmed" },
+    ];
+  }, [recentBkngs]);
 
   /* ── Recent Activity ── */
-  const activities = [
-    { icon: <FiEdit />, color: "#4F46E5", text: "Alberto Cortez updated his profile and added a new payment method.", time: "9:30 AM" },
-    { icon: <FiCheckSquare />, color: "#10B981", text: "Camellia Swan booked the Venice Dreams package for June 25, 2024.", time: "10:00 AM" },
-    { icon: <FiCreditCard />, color: "#F59E0B", text: "Payment was processed for Ludwig Contessa's Alpine Escape package.", time: "9:15 AM" },
-    { icon: <FiXSquare />, color: "#EF4444", text: "Armina Raul Meyes canceled her Caribbean Cruise package.", time: "12:45 PM" },
-    { icon: <FiStar />, color: "#8B5CF6", text: "Lydia Billings submitted a review for her recent package.", time: "2:30 PM" },
-  ];
+  const activitiesList = useMemo(() => {
+    if (recentActs && recentActs.length > 0) {
+      const typeIcons = {
+        booking: <FiEdit />,
+        confirmed: <FiCheckSquare />,
+        payment: <FiCreditCard />,
+        cancelled: <FiXSquare />,
+        review: <FiStar />
+      };
+      const typeColors = {
+        booking: "#4F46E5",
+        confirmed: "#10B981",
+        payment: "#F59E0B",
+        cancelled: "#EF4444",
+        review: "#8B5CF6"
+      };
+
+      return recentActs.map(a => ({
+        icon: typeIcons[a.type] || <FiClock />,
+        color: typeColors[a.type] || "#6B7280",
+        text: a.message,
+        time: new Date(a.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }));
+    }
+    return [
+      { icon: <FiEdit />, color: "#4F46E5", text: "Alberto Cortez updated his profile and added a new payment method.", time: "9:30 AM" },
+      { icon: <FiCheckSquare />, color: "#10B981", text: "Camellia Swan booked the Venice Dreams package for June 25, 2024.", time: "10:00 AM" },
+      { icon: <FiCreditCard />, color: "#F59E0B", text: "Payment was processed for Ludwig Contessa's Alpine Escape package.", time: "9:15 AM" },
+      { icon: <FiXSquare />, color: "#EF4444", text: "Armina Raul Meyes canceled her Caribbean Cruise package.", time: "12:45 PM" },
+      { icon: <FiStar />, color: "#8B5CF6", text: "Lydia Billings submitted a review for her recent package.", time: "2:30 PM" },
+    ];
+  }, [recentActs]);
 
   /* ── Trip breakdown for the Total Trips card ── */
   const tripBreakdown = useMemo(() => {
+    if (overviewData && overviewData.tripStats) {
+      const { Doned, Booked, cancelled } = overviewData.tripStats;
+      const total = Doned + Booked + cancelled;
+      return { total, done: Doned, booked: Booked, cancelled };
+    }
     const total = periodMetrics.bookings;
     const done = Math.round(total * 0.52);
     const booked = Math.round(total * 0.39);
     const cancelled = total - done - booked;
     return { total, done, booked, cancelled };
-  }, [periodMetrics]);
+  }, [overviewData, periodMetrics]);
 
   return (
     <div className="db-root">
@@ -380,7 +511,7 @@ const Dashboard = () => {
               </div>
               <div className="db-chart-wrap" style={{ height: 240 }}>
                 <ResponsiveContainer>
-                  <LineChart data={revenueData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                  <LineChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EEF2FF" />
                     <XAxis dataKey="day" tick={{ fill: "#6B7280", fontSize: 12 }} axisLine={false} tickLine={false} />
                     <YAxis domain={[0, yMax]} ticks={yTicks} tick={{ fill: "#6B7280", fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -395,10 +526,10 @@ const Dashboard = () => {
             <div className="db-card db-destinations">
               <div className="db-card-head">
                 <h4>Top Destinations</h4>
-                <select className="db-select" value={selectedDestMonth} onChange={e => setSelectedDestMonth(e.target.value)}>
+                {/* <select className="db-select" value={selectedDestMonth} onChange={e => setSelectedDestMonth(e.target.value)}>
                   <option>This Month</option>
                   <option>Last Month</option>
-                </select>
+                </select> */}
               </div>
               <div className="dest-wrap">
                 <div className="dest-donut">
@@ -476,13 +607,12 @@ const Dashboard = () => {
                 <span className="sort-lbl">Sort by:</span>
                 <select className="db-select-sm">
                   <option>Latest</option>
-                  <option>Popular</option>
                 </select>
                 <button className="view-all-btn" onClick={() => navigate("/tour-packages")}>View All</button>
               </div>
             </div>
             <div className="pkg-grid">
-              {travelPackages.map((p, i) => (
+              {travelPackagesList.map((p, i) => (
                 <div key={i} className="pkg-card">
                   <div className="pkg-img-wrap">
                     <img src={p.img} alt={p.dest} />
@@ -526,7 +656,7 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {bookings.map((b, i) => (
+                {bookingsList.map((b, i) => (
                   <tr key={i}>
                     <td>{b.name}</td>
                     <td>{b.pkg}</td>
@@ -562,15 +692,18 @@ const Dashboard = () => {
             </div>
             <div className="cal-grid">
               {DAY_LABELS.map(d => <div key={d} className="cal-dow">{d}</div>)}
-              {calWeeks.flat().map((d, i) => (
-                <div
-                  key={i}
-                  className={`cal-date ${!d ? "empty" : ""} ${d && highlightedDates.has(d) ? "hl" : ""} ${d === selectedDate ? "today" : ""}`}
-                  onClick={() => d && setSelectedDate(d)}
-                >
-                  {d || ""}
-                </div>
-              ))}
+              {calWeeks.flat().map((d, i) => {
+                const isHl = d && calendarEvts.some(e => new Date(e.start).getDate() === d && new Date(e.start).getMonth() === calMonth && new Date(e.start).getFullYear() === calYear);
+                return (
+                  <div
+                    key={i}
+                    className={`cal-date ${!d ? "empty" : ""} ${isHl ? "hl" : ""} ${d === selectedDate ? "today" : ""}`}
+                    onClick={() => d && setSelectedDate(d)}
+                  >
+                    {d || ""}
+                  </div>
+                );
+              })}
             </div>
             <div className="cal-selected-info">
               <FiCalendar size={13} />
@@ -616,7 +749,7 @@ const Dashboard = () => {
             )}
 
             <div className="trip-list">
-              {upcomingTrips.map((t, i) => (
+              {displayUpcomingTrips.map((t, i) => (
                 <div key={i} className={`trip-item ${t.active ? "active" : ""}`}>
                   <img src={t.img} alt={t.loc} />
                   <div className="trip-info">
@@ -640,7 +773,7 @@ const Dashboard = () => {
             </div>
             <p className="act-day">Today</p>
             <div className="act-list">
-              {activities.map((a, i) => (
+              {activitiesList.map((a, i) => (
                 <div key={i} className="act-row">
                   <div className="act-icon" style={{ background: `${a.color}18`, color: a.color }}>{a.icon}</div>
                   <div className="act-body">

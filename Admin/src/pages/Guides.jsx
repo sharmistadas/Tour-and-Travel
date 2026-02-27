@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FiMessageCircle,
   FiPhone,
@@ -6,791 +6,443 @@ import {
   FiTrendingUp,
   FiUser,
   FiCheckCircle,
-  FiClock,
-  FiHome,
   FiX,
   FiUpload,
-  FiImage
+  FiImage,
+  FiTrash2,
+  FiChevronLeft,
+  FiChevronRight
 } from "react-icons/fi";
 import { BsPatchCheckFill } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
 import "../styles/Guides.css";
 
-const guidesData = [
-  {
-    id: 1,
-    name: "Liam Parker",
-    email: "liam.parker@example.com",
-    phone: "+1 (555) 111-2222",
-    role: "Venice Tour Guide",
-    img: "https://randomuser.me/api/portraits/men/32.jpg"
-  },
-  {
-    id: 2,
-    name: "Emma Johnson",
-    email: "emma.johnson@example.com",
-    phone: "+1 (555) 222-3333",
-    role: "Serengeti Tour Guide",
-    img: "https://randomuser.me/api/portraits/women/44.jpg"
-  },
-  {
-    id: 3,
-    name: "Noah Brown",
-    email: "noah.brown@example.com",
-    phone: "+1 (555) 333-4444",
-    role: "Swiss Alps Tour Guide",
-    img: "https://randomuser.me/api/portraits/men/11.jpg"
-  },
-  {
-    id: 4,
-    name: "Ava Davis",
-    email: "ava.davis@example.com",
-    phone: "+1 (555) 444-5555",
-    role: "Caribbean Islands Tour Guide",
-    img: "https://randomuser.me/api/portraits/women/22.jpg"
-  },
-  {
-    id: 5,
-    name: "William Martinez",
-    email: "william.martinez@example.com",
-    phone: "+1 (555) 555-6666",
-    role: "Paris Tour Guide",
-    img: "https://randomuser.me/api/portraits/men/52.jpg"
-  },
-  {
-    id: 6,
-    name: "Sophia Wilson",
-    email: "sophia.wilson@example.com",
-    phone: "+1 (555) 666-7777",
-    role: "Tokyo Tour Guide",
-    img: "https://randomuser.me/api/portraits/women/64.jpg"
-  },
-  {
-    id: 7,
-    name: "James Taylor",
-    email: "james.taylor@example.com",
-    phone: "+1 (555) 777-8888",
-    role: "Greek Islands Tour Guide",
-    img: "https://randomuser.me/api/portraits/men/75.jpg"
-  },
-  {
-    id: 8,
-    name: "Mia Anderson",
-    email: "mia.anderson@example.com",
-    phone: "+1 (555) 888-9999",
-    role: "Bali Tour Guide",
-    img: "https://randomuser.me/api/portraits/women/33.jpg"
-  },
-  {
-    id: 9,
-    name: "Lucas Thompson",
-    email: "lucas.thompson@example.com",
-    phone: "+1 (555) 999-0000",
-    role: "New York Tour Guide",
-    img: "https://randomuser.me/api/portraits/men/86.jpg"
-  }
-];
-
-// Skills data for each guide
-const guideSkills = {
-  1: [
-    "Fluent in English, Italian, and French",
-    "Excellent communication and storytelling",
-    "In-depth knowledge of Venetian history and culture",
-    "Customer service and hospitality",
-    "Navigation and safety management"
-  ],
-  2: [
-    "Fluent in English and Swahili",
-    "Wildlife tracking and identification",
-    "First aid certified",
-    "Photography skills",
-    "4x4 off-road driving"
-  ],
-  3: [
-    "Fluent in English, German, and French",
-    "Mountain rescue certified",
-    "Skiing and snowboarding instructor",
-    "Avalanche safety training",
-    "Rock climbing expert"
-  ],
-  4: [
-    "Certified scuba diver",
-    "Marine biology knowledge",
-    "Boat handling skills",
-    "Snorkeling guide",
-    "Water safety certified"
-  ],
-  5: [
-    "Art history degree",
-    "Fluent in English and French",
-    "Wine tasting expert",
-    "Museum guide certified",
-    "Historical storytelling"
-  ],
-  6: [
-    "Fluent in Japanese",
-    "Cultural etiquette expert",
-    "Food tour specialist",
-    "Temple and shrine knowledge",
-    "Public transportation expert"
-  ],
-  7: [
-    "Ancient history expert",
-    "Archaeology background",
-    "Multi-lingual (Greek, English)",
-    "Island hopping specialist",
-    "Local cuisine knowledge"
-  ],
-  8: [
-    "Yoga instructor",
-    "Surfing guide",
-    "Wellness coaching",
-    "Spa and retreat expert",
-    "Holistic health knowledge"
-  ],
-  9: [
-    "City history expert",
-    "Broadway show knowledge",
-    "Restaurant guide",
-    "Subway navigation",
-    "Art and culture specialist"
-  ]
-};
-
-// Experiences data for each guide
-const guideExperiences = {
-  1: [
-    {
-      title: "Senior Tour Guide",
-      company: "Venice Explore Tours",
-      period: "January 2015 - Present",
-      description: "Leading and managing group tours across Venice, providing engaging and informative experiences, ensuring customer satisfaction and safety.",
-      icon: "clock"
-    },
-    {
-      title: "Tour Guide",
-      company: "Historical Venice Walks",
-      period: "June 2000 - December 2004",
-      description: "Conducted guided tours focusing on the history and culture of Venice, developed tour scripts, and trained new tour guides.",
-      icon: "home"
-    }
-  ],
-  2: [
-    {
-      title: "Senior Safari Guide",
-      company: "Serengeti Wildlife Tours",
-      period: "March 2016 - Present",
-      description: "Leading safari expeditions, educating guests about wildlife conservation, ensuring safety during game drives.",
-      icon: "clock"
-    },
-    {
-      title: "Junior Guide",
-      company: "Tanzania Adventure Co.",
-      period: "January 2012 - February 2016",
-      description: "Assisted lead guides on safari trips, learned tracking techniques, and provided customer support.",
-      icon: "briefcase"
-    }
-  ],
-  3: [
-    {
-      title: "Mountain Guide",
-      company: "Alpine Adventures",
-      period: "December 2017 - Present",
-      description: "Leading hiking and skiing tours in the Swiss Alps, ensuring guest safety, providing equipment guidance.",
-      icon: "clock"
-    },
-    {
-      title: "Ski Instructor",
-      company: "Swiss Ski School",
-      period: "November 2012 - April 2017",
-      description: "Taught skiing to beginners and intermediate level students, conducted safety briefings.",
-      icon: "home"
-    }
-  ]
-};
-
 function Guides() {
-  const [guides, setGuides] = useState(guidesData);
-  const [selectedGuide, setSelectedGuide] = useState(guidesData[0]);
+  const navigate = useNavigate();
+  const [guides, setGuides] = useState([]);
+  const [selectedGuide, setSelectedGuide] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showRoles, setShowRoles] = useState(false);
   const [selectedRole, setSelectedRole] = useState("All Roles");
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
+
   const [newGuide, setNewGuide] = useState({
     name: "",
     email: "",
     phone: "",
-    role: "",
-    img: ""
+    title: "",
+    experienceYears: "",
+    level: "Junior",
+    jobType: "Full Time",
+    status: "Active",
+    skills: []
   });
-  
-  // Edit guide state
+
   const [editGuide, setEditGuide] = useState({
-    id: "",
+    _id: "",
     name: "",
     email: "",
     phone: "",
-    role: "",
-    img: "",
-    experience: "",
-    level: "",
-    jobType: "",
-    status: "",
-    skills: [],
-    experiences: []
+    title: "",
+    experienceYears: "",
+    level: "Junior",
+    jobType: "Full Time",
+    status: "Active",
+    skills: []
   });
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
-  const [totalItems, setTotalItems] = useState(1250);
+  const [totalItems, setTotalItems] = useState(0);
 
-  // Get unique roles for dropdown
-  const roles = ["All Roles", ...new Set(guides.map(g => g.role))];
+  // Authentication check
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
-  // Get current guide's skills and experiences
-  const currentSkills = guideSkills[selectedGuide.id] || guideSkills[1];
-  const currentExperiences = guideExperiences[selectedGuide.id] || guideExperiences[1];
+  // Fetch guides
+  const fetchGuides = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage,
+        search: search || undefined,
+        level: selectedRole !== "All Roles" ? selectedRole : undefined
+      };
+      const res = await api.get("/guides", { params });
+      setGuides(res.data.guides || []);
+      setTotalItems(res.data.total || 0);
+    } catch (err) {
+      console.error("Failed to fetch guides:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, itemsPerPage, search, selectedRole]);
 
-  // Filter guides based on search and role
-  const filtered = guides.filter(g => {
-    const matchesSearch = g.name.toLowerCase().includes(search.toLowerCase()) ||
-                         g.email.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = selectedRole === "All Roles" || g.role === selectedRole;
-    return matchesSearch && matchesRole;
-  });
+  // Sync selected guide when list updates or on initial load
+  useEffect(() => {
+    if (!loading && guides.length > 0) {
+      if (!selectedGuide) {
+        setSelectedGuide(guides[0]);
+      } else {
+        const updated = guides.find(g => g._id === selectedGuide._id);
+        if (updated) setSelectedGuide(updated);
+      }
+    }
+  }, [guides, loading]);
 
-  // Pagination logic
-  const totalFilteredItems = filtered.length;
-  const totalPages = Math.ceil(totalFilteredItems / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filtered.slice(indexOfFirstItem, indexOfLastItem);
+  useEffect(() => {
+    fetchGuides();
+  }, [fetchGuides]);
 
-  // Change page
+  const roles = ["All Roles", "Junior", "Mid", "Senior"];
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const currentItems = guides;
+
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const prevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
 
-  // Handle items per page change
-  const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1);
-  };
-
-  // Generate page numbers with ellipsis
   const getPageNumbers = () => {
     const pageNumbers = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
       }
     } else {
       pageNumbers.push(1);
-      
       let start = Math.max(2, currentPage - 1);
       let end = Math.min(totalPages - 1, currentPage + 1);
-      
-      if (currentPage <= 2) {
-        end = 4;
-      }
-      
-      if (currentPage >= totalPages - 1) {
-        start = totalPages - 3;
-      }
-      
-      if (start > 2) {
-        pageNumbers.push('...');
-      }
-      
+      if (currentPage <= 2) end = 4;
+      if (currentPage >= totalPages - 1) start = totalPages - 3;
+      if (start > 2) pageNumbers.push('...');
       for (let i = start; i <= end; i++) {
-        if (i > 1 && i < totalPages) {
-          pageNumbers.push(i);
-        }
+        if (i > 1 && i < totalPages) pageNumbers.push(i);
       }
-      
-      if (end < totalPages - 1) {
-        pageNumbers.push('...');
-      }
-      
+      if (end < totalPages - 1) pageNumbers.push('...');
       pageNumbers.push(totalPages);
     }
-    
     return pageNumbers;
   };
 
-  // Handle image upload for Add Guide
-  const handleAddImageUpload = (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size must be less than 5MB");
+        return;
+      }
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewGuide({...newGuide, img: reader.result});
+        setAvatarPreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Handle image upload for Edit Guide
-  const handleEditImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditGuide({...editGuide, img: reader.result});
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleRemoveImage = () => {
+    setAvatarFile(null);
+    setAvatarPreview("");
   };
 
-  // ADD GUIDE FUNCTION
-  const handleAddGuide = () => {
-    if(!newGuide.name || !newGuide.email){
-      alert("Name and Email required!");
+  const handleAddGuide = async (e) => {
+    e.preventDefault();
+    if (!newGuide.name || !newGuide.email || !newGuide.phone || !newGuide.title) {
+      alert("Required fields: Name, Email, Phone, Title");
       return;
     }
 
-    const guide = {
-      id: Date.now(),
-      ...newGuide,
-      img: newGuide.img || "https://randomuser.me/api/portraits/lego/1.jpg"
-    };
+    const formData = new FormData();
+    formData.append("name", newGuide.name);
+    formData.append("email", newGuide.email);
+    formData.append("phone", newGuide.phone);
+    formData.append("title", newGuide.title);
+    formData.append("experienceYears", newGuide.experienceYears || "0");
+    formData.append("level", newGuide.level);
+    formData.append("jobType", newGuide.jobType);
+    formData.append("status", newGuide.status);
+    formData.append("skills", JSON.stringify(newGuide.skills));
+    if (avatarFile) {
+      formData.append("avatar", avatarFile);
+    }
 
-    setGuides(prev => [guide, ...prev]);
-    setSelectedGuide(guide);
-    setShowModal(false);
-    setNewGuide({
-      name: "",
-      email: "",
-      phone: "",
-      role: "",
-      img: ""
-    });
-    
-    setCurrentPage(1);
+    try {
+      const res = await api.post("/guides", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      if (res.data.success) {
+        alert("Guide created successfully!");
+        setShowModal(false);
+        setNewGuide({
+          name: "", email: "", phone: "", title: "", experienceYears: "",
+          level: "Junior", jobType: "Full Time", status: "Active", skills: []
+        });
+        setAvatarFile(null);
+        setAvatarPreview("");
+        fetchGuides();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to create guide");
+    }
   };
 
-  // EDIT GUIDE FUNCTION - Open edit modal
   const handleEditClick = () => {
     setEditGuide({
-      id: selectedGuide.id,
+      _id: selectedGuide._id,
       name: selectedGuide.name,
       email: selectedGuide.email,
       phone: selectedGuide.phone,
-      role: selectedGuide.role,
-      img: selectedGuide.img,
-      experience: "10 years",
-      level: "Senior",
-      jobType: "Full Time",
-      status: "Active",
-      skills: currentSkills,
-      experiences: currentExperiences
+      title: selectedGuide.title,
+      experienceYears: selectedGuide.experienceYears || "",
+      level: selectedGuide.level || "Junior",
+      jobType: selectedGuide.jobType || "Full Time",
+      status: selectedGuide.status || "Active",
+      skills: selectedGuide.skills || []
     });
+    setAvatarPreview(selectedGuide.avatar?.url || "");
+    setAvatarFile(null);
     setShowEditModal(true);
   };
 
-  // UPDATE GUIDE FUNCTION
-  const handleUpdateGuide = () => {
-    if(!editGuide.name || !editGuide.email){
-      alert("Name and Email required!");
+  const handleUpdateGuide = async (e) => {
+    e.preventDefault();
+    if (!editGuide.name || !editGuide.phone || !editGuide.title) {
+      alert("Required fields: Name, Phone, Title");
       return;
     }
 
-    // Update in guides array
-    setGuides(prev => prev.map(guide => 
-      guide.id === editGuide.id ? {
-        id: editGuide.id,
-        name: editGuide.name,
-        email: editGuide.email,
-        phone: editGuide.phone,
-        role: editGuide.role,
-        img: editGuide.img
-      } : guide
-    ));
-
-    // Update selected guide
-    setSelectedGuide({
-      id: editGuide.id,
-      name: editGuide.name,
-      email: editGuide.email,
-      phone: editGuide.phone,
-      role: editGuide.role,
-      img: editGuide.img
-    });
-
-    // Update skills and experiences in the data stores
-    if (guideSkills[editGuide.id]) {
-      guideSkills[editGuide.id] = editGuide.skills;
-    }
-    if (guideExperiences[editGuide.id]) {
-      guideExperiences[editGuide.id] = editGuide.experiences;
+    const formData = new FormData();
+    formData.append("name", editGuide.name);
+    formData.append("email", editGuide.email);
+    formData.append("phone", editGuide.phone);
+    formData.append("title", editGuide.title);
+    formData.append("experienceYears", editGuide.experienceYears || "0");
+    formData.append("level", editGuide.level);
+    formData.append("jobType", editGuide.jobType);
+    formData.append("status", editGuide.status);
+    formData.append("skills", JSON.stringify(editGuide.skills));
+    if (avatarFile) {
+      formData.append("avatar", avatarFile);
     }
 
-    setShowEditModal(false);
-    alert("Guide profile updated successfully!");
+    try {
+      const res = await api.put(`/guides/${editGuide._id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      if (res.data.success) {
+        alert("Guide updated successfully!");
+        setShowEditModal(false);
+        setAvatarFile(null);
+        setAvatarPreview("");
+        fetchGuides();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to update guide");
+    }
   };
 
-  // Handle skill change in edit modal
-  const handleSkillChange = (index, value) => {
-    const updatedSkills = [...editGuide.skills];
-    updatedSkills[index] = value;
-    setEditGuide({...editGuide, skills: updatedSkills});
+  const handleDeleteGuide = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this guide?")) return;
+    try {
+      const res = await api.delete(`/guides/${id}`);
+      alert(res.data.message || "Guide deleted successfully");
+      if (selectedGuide?._id === id) setSelectedGuide(null);
+      fetchGuides();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete guide");
+    }
   };
 
-  // Add new skill
-  const handleAddSkill = () => {
-    setEditGuide({
-      ...editGuide, 
-      skills: [...editGuide.skills, "New skill"]
-    });
+  const handleSkillChange = (isEdit, index, value) => {
+    if (isEdit) {
+      const updated = [...editGuide.skills];
+      updated[index] = value;
+      setEditGuide({ ...editGuide, skills: updated });
+    } else {
+      const updated = [...newGuide.skills];
+      updated[index] = value;
+      setNewGuide({ ...newGuide, skills: updated });
+    }
   };
 
-  // Remove skill
-  const handleRemoveSkill = (index) => {
-    const updatedSkills = editGuide.skills.filter((_, i) => i !== index);
-    setEditGuide({...editGuide, skills: updatedSkills});
+  const addSkill = (isEdit) => {
+    if (isEdit) setEditGuide({ ...editGuide, skills: [...editGuide.skills, ""] });
+    else setNewGuide({ ...newGuide, skills: [...newGuide.skills, ""] });
   };
 
-  // Handle experience change
-  const handleExperienceChange = (index, field, value) => {
-    const updatedExperiences = [...editGuide.experiences];
-    updatedExperiences[index] = {...updatedExperiences[index], [field]: value};
-    setEditGuide({...editGuide, experiences: updatedExperiences});
-  };
-
-  // Add new experience
-  const handleAddExperience = () => {
-    setEditGuide({
-      ...editGuide,
-      experiences: [
-        ...editGuide.experiences,
-        {
-          title: "New Position",
-          company: "Company Name",
-          period: "Start Date - End Date",
-          description: "Job description...",
-          icon: "clock"
-        }
-      ]
-    });
-  };
-
-  // Remove experience
-  const handleRemoveExperience = (index) => {
-    const updatedExperiences = editGuide.experiences.filter((_, i) => i !== index);
-    setEditGuide({...editGuide, experiences: updatedExperiences});
+  const removeSkill = (isEdit, index) => {
+    if (isEdit) setEditGuide({ ...editGuide, skills: editGuide.skills.filter((_, i) => i !== index) });
+    else setNewGuide({ ...newGuide, skills: newGuide.skills.filter((_, i) => i !== index) });
   };
 
   return (
     <div className="guides-wrapper">
-      {/* LEFT CARD */}
       <div className="guides-card">
-        {/* HEADER */}
         <div className="guides-header">
-          <h2>Guides</h2>
-
+          <h2>Guides Management</h2>
           <div className="guides-controls">
             <input
-              placeholder="Search name, email, etc"
+              placeholder="Search guides..."
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
             />
-
             <div className="role-dropdown">
-              <button
-                className="role-btn"
-                onClick={() => setShowRoles(!showRoles)}
-              >
-                {selectedRole}
-                <span className={`arrow ${showRoles ? "up" : ""}`}>
-                  ▼
-                </span>
+              <button className="role-btn" onClick={() => setShowRoles(!showRoles)}>
+                {selectedRole} <span className={`arrow ${showRoles ? "up" : ""}`}>▼</span>
               </button>
-
               {showRoles && (
                 <div className="roles-menu">
                   {roles.map(role => (
-                    <div
-                      key={role}
-                      className="role-item"
-                      onClick={() => {
-                        setSelectedRole(role);
-                        setShowRoles(false);
-                        setCurrentPage(1);
-                      }}
-                    >
+                    <div key={role} className="role-item" onClick={() => { setSelectedRole(role); setShowRoles(false); setCurrentPage(1); }}>
                       {role}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-
-            <button 
-              className="add-btn"
-              onClick={() => setShowModal(true)}
-            >
-              + Add Guide
+            <button className="add-btn" onClick={() => { setShowModal(true); setAvatarPreview(""); setAvatarFile(null); }}>
+              <FiUpload /> Add Guide
             </button>
           </div>
         </div>
 
-        {/* LIST */}
-        {currentItems.map(guide => (
-          <div
-            key={guide.id}
-            className={`guide-row ${
-              selectedGuide.id === guide.id ? "active" : ""
-            }`}
-            onClick={() => setSelectedGuide(guide)}
-          >
-            <img src={guide.img} alt={guide.name} />
-            <div className="guide-text">
-              <h4>{guide.name}</h4>
-              <span>{guide.email}</span>
-              <span>{guide.phone}</span>
-            </div>
-            <div className="role-pill">{guide.role}</div>
-          </div>
-        ))}
+        <div className="guides-list">
+          {loading ? (
+            <div className="loading-state">Loading...</div>
+          ) : currentItems.length > 0 ? (
+            currentItems.map(guide => (
+              <div
+                key={guide._id}
+                className={`guide-row ${selectedGuide?._id === guide._id ? "active" : ""}`}
+                onClick={() => setSelectedGuide(guide)}
+              >
+                <img src={guide.avatar?.url || "https://randomuser.me/api/portraits/lego/1.jpg"} alt={guide.name} />
+                <div className="guide-text">
+                  <h4>{guide.name}</h4>
+                  <span>{guide.email}</span>
+                  <span>{guide.phone}</span>
+                </div>
+                <div className="role-pill">{guide.title}</div>
+                <button className="delete-row-btn" onClick={(e) => { e.stopPropagation(); handleDeleteGuide(guide._id); }}>
+                  <FiTrash2 />
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="empty-list">No guides found.</div>
+          )}
+        </div>
 
-        {/* PAGINATION */}
         <div className="pagination">
           <div className="showing">
-            Showing 
-            <select 
-              value={itemsPerPage} 
-              onChange={handleItemsPerPageChange}
-              className="items-per-page"
-            >
-              <option value="5">5</option>
-              <option value="9">9</option>
-              <option value="15">15</option>
-              <option value="25">25</option>
-            </select>
-            out of {totalItems}
+            Showing <span>{currentItems.length}</span> out of {totalItems}
           </div>
-
           <div className="pages">
-            <button 
-              onClick={prevPage}
-              disabled={currentPage === 1}
-              className="page-nav"
-            >
-              &lt;
-            </button>
-            
-            {getPageNumbers().map((page, index) => (
-              page === '...' ? (
-                <span key={`ellipsis-${index}`} className="ellipsis">...</span>
-              ) : (
-                <button
-                  key={page}
-                  onClick={() => paginate(page)}
-                  className={`page-number ${currentPage === page ? 'active' : ''}`}
-                >
-                  {page}
-                </button>
-              )
+            <button className="page-nav" onClick={prevPage} disabled={currentPage === 1}><FiChevronLeft /></button>
+            {getPageNumbers().map((p, idx) => (
+              p === '...' ? <span key={idx} className="ellipsis">...</span> :
+                <button key={p} onClick={() => paginate(p)} className={`page-number ${currentPage === p ? 'active' : ''}`}>{p}</button>
             ))}
-            
-            <button 
-              onClick={nextPage}
-              disabled={currentPage === totalPages}
-              className="page-nav"
-            >
-              &gt;
-            </button>
+            <button className="page-nav" onClick={nextPage} disabled={currentPage === totalPages}><FiChevronRight /></button>
           </div>
         </div>
       </div>
 
-      {/* RIGHT PANEL */}
       <div className="guide-details">
-        {/* Banner */}
-        <div className="details-banner"></div>
-
-        <div className="details-body">
-          {/* Avatar + Name + Role */}
-          <div className="profile-top">
-            <img
-              src={selectedGuide.img}
-              className="details-avatar"
-              alt={selectedGuide.name}
-            />
-
-            <div className="profile-info">
-              <h2>{selectedGuide.name}</h2>
-              <p>{selectedGuide.role}</p>
-            </div>
-
-            <div className="profile-actions">
-              <button className="icon-btn">
-                <FiMessageCircle size={18} />
-              </button>
-              <button className="icon-btn blue">
-                <FiPhone size={18} />
-              </button>
-            </div>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon">
-                <FiBriefcase />
-              </div>
-              <div>
-                <p>Work Experience</p>
-                <strong>10 years</strong>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon">
-                <FiTrendingUp />
-              </div>
-              <div>
-                <p>Experience Level</p>
-                <strong>Senior</strong>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon">
-                <FiUser />
-              </div>
-              <div>
-                <p>Job Type</p>
-                <strong>Full Time</strong>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon">
-                <FiCheckCircle />
-              </div>
-              <div>
-                <p>Job Status</p>
-                <strong>Active</strong>
-              </div>
-            </div>
-          </div>
-
-          {/* Skills Section */}
-          <div className="skills-section">
-            <h3>Skills</h3>
-            <ul className="skills-list">
-              {currentSkills.map((skill, index) => (
-                <li key={index}>
-                  <BsPatchCheckFill className="tick"/> {skill}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Experiences Section */}
-          <div className="experiences-section">
-            <h3>Experiences</h3>
-
-            {currentExperiences.map((exp, index) => (
-              <div key={index} className="experience-card">
-                <div className={`exp-icon ${exp.icon === 'home' ? 'red' : 'blue'}`}>
-                  {exp.icon === 'clock' ? <FiClock/> : exp.icon === 'home' ? <FiHome/> : <FiBriefcase/>}
+        {selectedGuide ? (
+          <>
+            <div className="details-banner"></div>
+            <div className="details-body">
+              <div className="profile-top">
+                <img src={selectedGuide.avatar?.url || "https://randomuser.me/api/portraits/lego/1.jpg"} className="details-avatar" alt={selectedGuide.name} />
+                <div className="profile-info">
+                  <h2>{selectedGuide.name}</h2>
+                  <p>{selectedGuide.title}</p>
                 </div>
-                <div>
-                  <h4>{exp.title}</h4>
-                  <p className="company">
-                    {exp.company}
-                    <span className="dot"/> {exp.period}
-                  </p>
-                  <p className="description">{exp.description}</p>
+                <div className="profile-actions">
+                  <button className="icon-btn"><FiMessageCircle size={18} /></button>
+                  <button className="icon-btn blue"><FiPhone size={18} /></button>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Edit Profile Button */}
-          <button className="edit-profile" onClick={handleEditClick}>
-            Edit Profile
-          </button>
-        </div>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-icon"><FiBriefcase /></div>
+                  <div><p>Experience</p><strong>{selectedGuide.experienceYears || 0} yrs</strong></div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon"><FiTrendingUp /></div>
+                  <div><p>Level</p><strong>{selectedGuide.level}</strong></div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon"><FiUser /></div>
+                  <div><p>Job Type</p><strong>{selectedGuide.jobType}</strong></div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon"><FiCheckCircle /></div>
+                  <div><p>Status</p><strong>{selectedGuide.status}</strong></div>
+                </div>
+              </div>
+
+              <div className="skills-section">
+                <h3>Skills</h3>
+                <ul className="skills-list">
+                  {selectedGuide.skills?.length > 0 ? selectedGuide.skills.map((s, i) => (
+                    <li key={i}><BsPatchCheckFill className="tick" /> {s}</li>
+                  )) : <li>No skills listed</li>}
+                </ul>
+              </div>
+
+              <button className="edit-profile" onClick={handleEditClick}>Edit Profile</button>
+            </div>
+          </>
+        ) : (
+          <div className="no-selection">Select a guide to view details</div>
+        )}
       </div>
 
-      {/* ADD GUIDE MODAL WITH IMAGE UPLOAD */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
               <h3>Add New Guide</h3>
-              <button className="modal-close" onClick={() => setShowModal(false)}>
-                <FiX />
-              </button>
+              <button className="modal-close" onClick={() => setShowModal(false)}><FiX /></button>
             </div>
-            
             <div className="modal-body">
-              <div className="form-group">
-                <label>Name *</label>
-                <input
-                  type="text"
-                  placeholder="Enter name"
-                  value={newGuide.name}
-                  onChange={(e) => setNewGuide({...newGuide, name: e.target.value})}
-                />
+              <div className="form-group"><label>Name*</label><input value={newGuide.name} onChange={e => setNewGuide({ ...newGuide, name: e.target.value })} placeholder="Full Name" /></div>
+              <div className="form-group"><label>Email*</label><input value={newGuide.email} onChange={e => setNewGuide({ ...newGuide, email: e.target.value })} placeholder="email@example.com" /></div>
+              <div className="form-group"><label>Phone*</label><input value={newGuide.phone} onChange={e => setNewGuide({ ...newGuide, phone: e.target.value })} placeholder="+1 234 567 890" /></div>
+              <div className="form-group"><label>Title*</label><input value={newGuide.title} onChange={e => setNewGuide({ ...newGuide, title: e.target.value })} placeholder="e.g. Senior Trekking Guide" /></div>
+              <div className="form-row">
+                <div className="form-group"><label>Experience (Years)</label><input type="number" value={newGuide.experienceYears} onChange={e => setNewGuide({ ...newGuide, experienceYears: e.target.value })} /></div>
+                <div className="form-group">
+                  <label>Level</label>
+                  <select value={newGuide.level} onChange={e => setNewGuide({ ...newGuide, level: e.target.value })}>
+                    <option value="Junior">Junior</option><option value="Mid">Mid</option><option value="Senior">Senior</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>Email *</label>
-                <input
-                  type="email"
-                  placeholder="Enter email"
-                  value={newGuide.email}
-                  onChange={(e) => setNewGuide({...newGuide, email: e.target.value})}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Phone</label>
-                <input
-                  type="text"
-                  placeholder="Enter phone"
-                  value={newGuide.phone}
-                  onChange={(e) => setNewGuide({...newGuide, phone: e.target.value})}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Role</label>
-                <select
-                  value={newGuide.role}
-                  onChange={(e) => setNewGuide({...newGuide, role: e.target.value})}
-                >
-                  <option value="">Select Role</option>
-                  {roles.filter(r => r !== "All Roles").map(role => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Image Upload Field */}
-              <div className="form-group upload-group">
+              <div className="upload-group">
                 <label>Profile Image</label>
                 <div className="upload-container">
-                  {newGuide.img ? (
+                  {avatarPreview ? (
                     <div className="image-preview">
-                      <img src={newGuide.img} alt="Preview" className="preview-img" />
-                      <button 
-                        className="remove-image-btn"
-                        onClick={() => setNewGuide({...newGuide, img: ""})}
-                      >
-                        <FiX />
-                      </button>
+                      <img src={avatarPreview} className="preview-img" alt="Avatar preview" />
+                      <button className="remove-image-btn" onClick={handleRemoveImage}><FiX /></button>
                     </div>
                   ) : (
                     <div className="upload-placeholder">
@@ -798,288 +450,115 @@ function Guides() {
                       <p>No image selected</p>
                     </div>
                   )}
-                  <label htmlFor="add-image-upload" className="upload-btn">
+                  <label className="upload-btn">
                     <FiUpload /> Choose Image
+                    <input type="file" onChange={handleImageUpload} accept="image/*" style={{ display: 'none' }} />
                   </label>
-                  <input
-                    id="add-image-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAddImageUpload}
-                    style={{ display: 'none' }}
-                  />
                 </div>
               </div>
-            </div>
 
+              <div className="edit-section">
+                <div className="section-header">
+                  <h4>Skills</h4>
+                  <button className="add-item-btn" onClick={() => addSkill(false)}>+ Add Skill</button>
+                </div>
+                {newGuide.skills.map((s, i) => (
+                  <div key={i} className="skill-edit-row">
+                    <input className="skill-input" value={s} onChange={e => handleSkillChange(false, i, e.target.value)} placeholder="e.g. First Aid" />
+                    <button className="remove-item-btn" onClick={() => removeSkill(false, i)}>×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
             <div className="modal-footer">
-              <button className="modal-btn cancel" onClick={() => setShowModal(false)}>
-                Cancel
-              </button>
-              <button className="modal-btn add" onClick={handleAddGuide}>
-                Add Guide
-              </button>
+              <button className="modal-btn cancel" onClick={() => setShowModal(false)}>Cancel</button>
+              <button className="modal-btn add" onClick={handleAddGuide}>Create Guide</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* EDIT PROFILE MODAL WITH IMAGE UPLOAD */}
       {showEditModal && (
         <div className="modal-overlay">
           <div className="modal-content edit-modal">
             <div className="modal-header">
               <h3>Edit Guide Profile</h3>
-              <button className="modal-close" onClick={() => setShowEditModal(false)}>
-                <FiX />
-              </button>
+              <button className="modal-close" onClick={() => setShowEditModal(false)}><FiX /></button>
             </div>
-            
             <div className="modal-body edit-modal-body">
-              {/* Basic Information */}
               <div className="edit-section">
-                <h4>Basic Information</h4>
+                <h4>Personal Information</h4>
+                <div className="form-group"><label>Name*</label><input value={editGuide.name} onChange={e => setEditGuide({ ...editGuide, name: e.target.value })} /></div>
                 <div className="form-row">
-                  <div className="form-group">
-                    <label>Name *</label>
-                    <input
-                      type="text"
-                      value={editGuide.name}
-                      onChange={(e) => setEditGuide({...editGuide, name: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Email *</label>
-                    <input
-                      type="email"
-                      value={editGuide.email}
-                      onChange={(e) => setEditGuide({...editGuide, email: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Phone</label>
-                    <input
-                      type="text"
-                      value={editGuide.phone}
-                      onChange={(e) => setEditGuide({...editGuide, phone: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Role</label>
-                    <select
-                      value={editGuide.role}
-                      onChange={(e) => setEditGuide({...editGuide, role: e.target.value})}
-                    >
-                      {roles.filter(r => r !== "All Roles").map(role => (
-                        <option key={role} value={role}>{role}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Image Upload Field for Edit */}
-                <div className="form-group upload-group">
-                  <label>Profile Image</label>
-                  <div className="upload-container">
-                    {editGuide.img ? (
-                      <div className="image-preview">
-                        <img src={editGuide.img} alt="Preview" className="preview-img" />
-                        <button 
-                          className="remove-image-btn"
-                          onClick={() => setEditGuide({...editGuide, img: ""})}
-                        >
-                          <FiX />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="upload-placeholder">
-                        <FiImage className="upload-icon" />
-                        <p>No image selected</p>
-                      </div>
-                    )}
-                    <label htmlFor="edit-image-upload" className="upload-btn">
-                      <FiUpload /> Choose Image
-                    </label>
-                    <input
-                      id="edit-image-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleEditImageUpload}
-                      style={{ display: 'none' }}
-                    />
-                  </div>
+                  <div className="form-group"><label>Phone*</label><input value={editGuide.phone} onChange={e => setEditGuide({ ...editGuide, phone: e.target.value })} /></div>
+                  <div className="form-group"><label>Title*</label><input value={editGuide.title} onChange={e => setEditGuide({ ...editGuide, title: e.target.value })} /></div>
                 </div>
               </div>
 
-              {/* Professional Information */}
               <div className="edit-section">
-                <h4>Professional Information</h4>
+                <h4>Professional Details</h4>
                 <div className="form-row">
+                  <div className="form-group"><label>Experience (Years)</label><input type="number" value={editGuide.experienceYears} onChange={e => setEditGuide({ ...editGuide, experienceYears: e.target.value })} /></div>
                   <div className="form-group">
-                    <label>Work Experience</label>
-                    <input
-                      type="text"
-                      value={editGuide.experience}
-                      onChange={(e) => setEditGuide({...editGuide, experience: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Experience Level</label>
-                    <select
-                      value={editGuide.level}
-                      onChange={(e) => setEditGuide({...editGuide, level: e.target.value})}
-                    >
-                      <option value="Junior">Junior</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Senior">Senior</option>
-                      <option value="Expert">Expert</option>
+                    <label>Level</label>
+                    <select value={editGuide.level} onChange={e => setEditGuide({ ...editGuide, level: e.target.value })}>
+                      <option value="Junior">Junior</option><option value="Mid">Mid</option><option value="Senior">Senior</option>
                     </select>
                   </div>
                 </div>
-
                 <div className="form-row">
                   <div className="form-group">
                     <label>Job Type</label>
-                    <select
-                      value={editGuide.jobType}
-                      onChange={(e) => setEditGuide({...editGuide, jobType: e.target.value})}
-                    >
-                      <option value="Full Time">Full Time</option>
-                      <option value="Part Time">Part Time</option>
-                      <option value="Contract">Contract</option>
-                      <option value="Seasonal">Seasonal</option>
+                    <select value={editGuide.jobType} onChange={e => setEditGuide({ ...editGuide, jobType: e.target.value })}>
+                      <option value="Full Time">Full Time</option><option value="Part Time">Part Time</option><option value="Contract">Contract</option><option value="Seasonal">Seasonal</option>
                     </select>
                   </div>
-
                   <div className="form-group">
-                    <label>Job Status</label>
-                    <select
-                      value={editGuide.status}
-                      onChange={(e) => setEditGuide({...editGuide, status: e.target.value})}
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                      <option value="On Leave">On Leave</option>
-                      <option value="Training">Training</option>
+                    <label>Status</label>
+                    <select value={editGuide.status} onChange={e => setEditGuide({ ...editGuide, status: e.target.value })}>
+                      <option value="Active">Active</option><option value="Inactive">Inactive</option><option value="On Leave">On Leave</option><option value="Training">Training</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              {/* Skills Section */}
+              <div className="edit-section">
+                <h4>Profile Image</h4>
+                <div className="upload-container">
+                  {avatarPreview ? (
+                    <div className="image-preview">
+                      <img src={avatarPreview} className="preview-img" alt="Avatar preview" />
+                      <button className="remove-image-btn" onClick={handleRemoveImage}><FiX /></button>
+                    </div>
+                  ) : (
+                    <div className="upload-placeholder">
+                      <FiImage className="upload-icon" />
+                      <p>No image selected</p>
+                    </div>
+                  )}
+                  <label className="upload-btn">
+                    <FiUpload /> Change Image
+                    <input type="file" onChange={handleImageUpload} accept="image/*" style={{ display: 'none' }} />
+                  </label>
+                </div>
+              </div>
+
               <div className="edit-section">
                 <div className="section-header">
                   <h4>Skills</h4>
-                  <button className="add-item-btn" onClick={handleAddSkill}>
-                    + Add Skill
-                  </button>
+                  <button className="add-item-btn" onClick={() => addSkill(true)}>+ Add Skill</button>
                 </div>
-                
-                {editGuide.skills?.map((skill, index) => (
-                  <div key={index} className="skill-edit-row">
-                    <input
-                      type="text"
-                      value={skill}
-                      onChange={(e) => handleSkillChange(index, e.target.value)}
-                      className="skill-input"
-                    />
-                    <button 
-                      className="remove-item-btn"
-                      onClick={() => handleRemoveSkill(index)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Experiences Section */}
-              <div className="edit-section">
-                <div className="section-header">
-                  <h4>Experiences</h4>
-                  <button className="add-item-btn" onClick={handleAddExperience}>
-                    + Add Experience
-                  </button>
-                </div>
-                
-                {editGuide.experiences?.map((exp, index) => (
-                  <div key={index} className="experience-edit-card">
-                    <div className="experience-edit-header">
-                      <h5>Experience {index + 1}</h5>
-                      <button 
-                        className="remove-item-btn"
-                        onClick={() => handleRemoveExperience(index)}
-                      >
-                        ×
-                      </button>
-                    </div>
-                    
-                    <div className="form-group">
-                      <label>Title</label>
-                      <input
-                        type="text"
-                        value={exp.title}
-                        onChange={(e) => handleExperienceChange(index, 'title', e.target.value)}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Company</label>
-                      <input
-                        type="text"
-                        value={exp.company}
-                        onChange={(e) => handleExperienceChange(index, 'company', e.target.value)}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Period</label>
-                      <input
-                        type="text"
-                        value={exp.period}
-                        onChange={(e) => handleExperienceChange(index, 'period', e.target.value)}
-                        placeholder="e.g., January 2015 - Present"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Description</label>
-                      <textarea
-                        value={exp.description}
-                        onChange={(e) => handleExperienceChange(index, 'description', e.target.value)}
-                        rows="3"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Icon</label>
-                      <select
-                        value={exp.icon}
-                        onChange={(e) => handleExperienceChange(index, 'icon', e.target.value)}
-                      >
-                        <option value="clock">Clock</option>
-                        <option value="home">Home</option>
-                        <option value="briefcase">Briefcase</option>
-                      </select>
-                    </div>
+                {editGuide.skills.map((s, i) => (
+                  <div key={i} className="skill-edit-row">
+                    <input className="skill-input" value={s} onChange={e => handleSkillChange(true, i, e.target.value)} />
+                    <button className="remove-item-btn" onClick={() => removeSkill(true, i)}>×</button>
                   </div>
                 ))}
               </div>
             </div>
-
             <div className="modal-footer">
-              <button className="modal-btn cancel" onClick={() => setShowEditModal(false)}>
-                Cancel
-              </button>
-              <button className="modal-btn add" onClick={handleUpdateGuide}>
-                Save Changes
-              </button>
+              <button className="modal-btn cancel" onClick={() => setShowEditModal(false)}>Cancel</button>
+              <button className="modal-btn add" onClick={handleUpdateGuide}>Save Changes</button>
             </div>
           </div>
         </div>

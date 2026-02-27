@@ -7,7 +7,7 @@ const travelPlanSchema = new mongoose.Schema({
   },
   date: {
     type: Date,
-    required: true
+    required: false
   },
   title: {
     type: String,
@@ -75,8 +75,8 @@ const packageSchema = new mongoose.Schema(
       required: true,
       enum: ["Adventure", "Family", "Honeymoon", "Luxury", "Budget"]
     },
-includes: [String],
-  excludes: [String],
+    includes: [String],
+    excludes: [String],
 
     travelPlans: [travelPlanSchema],
 
@@ -88,4 +88,4 @@ includes: [String],
 
 
 // Export model
-export default  mongoose.model('Package', packageSchema);
+export default mongoose.model('Package', packageSchema);

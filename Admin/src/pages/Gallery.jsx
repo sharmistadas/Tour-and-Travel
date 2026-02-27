@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Calendar,
@@ -17,6 +18,18 @@ import {
 import "../styles/Gallery.css";
 
 const TravelGalleryPanel = () => {
+  const navigate = useNavigate();
+
+  // -----------------------------
+  // AUTHENTICATION
+  // -----------------------------
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   const [packages, setPackages] = useState([
     {
       id: 1,
@@ -249,6 +262,10 @@ const TravelGalleryPanel = () => {
   const handleImageUpload = (e, isEdit = false) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size must be less than 5MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         if (isEdit) {
@@ -264,13 +281,18 @@ const TravelGalleryPanel = () => {
   // Handle multiple images upload for ADD modal
   const handleMultipleImagesUploadForAdd = (e) => {
     const files = Array.from(e.target.files);
-    const newImages = [];
+    const validFiles = files.filter(f => f.size <= 5 * 1024 * 1024);
 
-    files.forEach((file) => {
+    if (validFiles.length < files.length) {
+      alert("Some images were skipped because they exceed 5MB");
+    }
+
+    const newImages = [];
+    validFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         newImages.push(reader.result);
-        if (newImages.length === files.length) {
+        if (newImages.length === validFiles.length) {
           setNewPackage((prev) => ({
             ...prev,
             images: [...(prev.images || []), ...newImages],
@@ -295,13 +317,18 @@ const TravelGalleryPanel = () => {
   // Handle multiple images upload
   const handleMultipleImagesUpload = (e) => {
     const files = Array.from(e.target.files);
-    const newImages = [];
+    const validFiles = files.filter(f => f.size <= 5 * 1024 * 1024);
 
-    files.forEach((file) => {
+    if (validFiles.length < files.length) {
+      alert("Some images were skipped because they exceed 5MB");
+    }
+
+    const newImages = [];
+    validFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         newImages.push(reader.result);
-        if (newImages.length === files.length) {
+        if (newImages.length === validFiles.length) {
           setEditingPackage((prev) => ({
             ...prev,
             images: [...(prev.images || []), ...newImages],
@@ -532,28 +559,28 @@ const TravelGalleryPanel = () => {
         selectedCategory !== "All Packages" ||
         startDate ||
         endDate) && (
-        <div className="results-info">
-          <p>
-            Showing <strong>{filteredPackages.length}</strong>{" "}
-            {filteredPackages.length === 1 ? "package" : "packages"}
-            {searchQuery && ` matching "${searchQuery}"`}
-            {selectedCategory !== "All Packages" && ` in ${selectedCategory}`}
-            {startDate && endDate && ` from ${formatDateRange()}`}
-          </p>
-          <button
-            className="clear-filters"
-            onClick={() => {
-              setSearchQuery("");
-              setSelectedCategory("All Packages");
-              setStartDate("");
-              setEndDate("");
-              setCurrentPage(1);
-            }}
-          >
-            Clear All Filters
-          </button>
-        </div>
-      )}
+          <div className="results-info">
+            <p>
+              Showing <strong>{filteredPackages.length}</strong>{" "}
+              {filteredPackages.length === 1 ? "package" : "packages"}
+              {searchQuery && ` matching "${searchQuery}"`}
+              {selectedCategory !== "All Packages" && ` in ${selectedCategory}`}
+              {startDate && endDate && ` from ${formatDateRange()}`}
+            </p>
+            <button
+              className="clear-filters"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory("All Packages");
+                setStartDate("");
+                setEndDate("");
+                setCurrentPage(1);
+              }}
+            >
+              Clear All Filters
+            </button>
+          </div>
+        )}
 
       {/* Package Gallery */}
       <div className={`package-grid ${viewMode}`}>
@@ -641,9 +668,8 @@ const TravelGalleryPanel = () => {
             {renderPaginationButtons().map((page, index) => (
               <button
                 key={index}
-                className={`pagination-btn ${
-                  page === currentPage ? "active" : ""
-                } ${page === "..." ? "dots" : ""}`}
+                className={`pagination-btn ${page === currentPage ? "active" : ""
+                  } ${page === "..." ? "dots" : ""}`}
                 onClick={() =>
                   typeof page === "number" && handlePageChange(page)
                 }

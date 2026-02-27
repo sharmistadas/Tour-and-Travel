@@ -39,6 +39,14 @@ export const adminLogin = asyncHandler(async (req, res, next) => {
     { expiresIn: "1d" }
   );
 
+  // Set cookie
+  res.cookie("adminToken", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+  });
+
   res.status(200).json({
     message: "Admin login successful",
     token,

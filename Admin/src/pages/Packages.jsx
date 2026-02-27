@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Star,
   MapPin,
@@ -11,264 +11,51 @@ import {
   X,
   Trash2,
   Upload,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "../styles/Packages.css";
+import api from "../utils/api";
 
 const emptyForm = {
   title: "",
-  location: "",
-  days: "",
-  nights: "",
+  destination: "",
+  durationDays: "",
+  durationNights: "",
   price: "",
-  participants: "",
-  image: "",
+  maxPerson: "",
+  thumbnailImage: "",
   description: "",
   includes: "",
-  tripSchedule: "",
+  excludes: "",
+  category: "Adventure",
 };
 
 const Packages = () => {
-  /* ----- MOCK DATA ----- */
-  const [packages, setPackages] = useState([
-    {
-      id: 1,
-      title: "Venice Dreams",
-      location: "Venice, Italy",
-      days: 6,
-      nights: 5,
-      price: 1500,
-      rating: 4.5,
-      participants: 20,
-      image:
-        "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=600&q=80",
-      description:
-        "Immerse yourself in the timeless beauty and romance of Venice with our Venice Dreams package. Explore the enchanting canals, historic architecture, and vibrant culture of this unique city. This package offers a perfect blend of guided tours and leisure time to experience Venice at your own pace.",
-      includes: [
-        "Accommodation in a charming boutique hotel along the Grand Canal",
-        "Daily breakfast and one traditional Venetian dinner",
-        "Gondola ride through the canals",
-        "Guided tour of St. Mark's Basilica and Doge's Palace",
-      ],
-      tripSchedule: [
-        {
-          day: 1,
-          title: "Arrival in Venice",
-          description:
-            "Transfer to hotel, welcome drink, and orientation. Leisure time to explore local surroundings.",
-        },
-        {
-          day: 2,
-          title: "Guided City Tour",
-          description:
-            "Guided tour of St. Mark's Basilica and Doge's Palace. Traditional Venetian dinner.",
-        },
-        {
-          day: 3,
-          title: "Murano and Burano",
-          description:
-            "Visit to Murano glass-blowing factory, exploration of Burano island. Free time.",
-        },
-        {
-          day: 4,
-          title: "Cultural Immersion",
-          description:
-            "Visit to local markets, optional cooking class. Free time to explore cafes and restaurants.",
-        },
-        {
-          day: 5,
-          title: "Leisure Day",
-          description:
-            "Free day to explore Venice on your own, optional activities. Farewell gathering.",
-        },
-        {
-          day: 6,
-          title: "Departure",
-          description: "Transfer to airport for departure.",
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "Safari Adventure",
-      location: "Serengeti, Tanzania",
-      days: 8,
-      nights: 7,
-      price: 3200,
-      rating: 5.0,
-      participants: 15,
-      image:
-        "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=600&q=80",
-      description:
-        "Experience the wild beauty of Africa with our Safari Adventure package. Witness the Great Migration, spot the Big Five, and immerse yourself in the stunning landscapes of the Serengeti.",
-      includes: [
-        "Luxury safari lodge accommodation",
-        "All meals and beverages",
-        "Professional safari guide",
-        "4x4 safari vehicle",
-      ],
-      tripSchedule: [
-        {
-          day: 1,
-          title: "Arrival",
-          description: "Arrive in Arusha, transfer to hotel. Safari briefing.",
-        },
-        {
-          day: 2,
-          title: "Serengeti Park",
-          description: "Flight to Serengeti. Afternoon game drive.",
-        },
-        {
-          day: 3,
-          title: "Full Day Safari",
-          description:
-            "Morning game drive, afternoon game drive. Sundowner experience.",
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: "Alpine Escape",
-      location: "Swiss Alps, Switzerland",
-      days: 7,
-      nights: 6,
-      price: 2100,
-      rating: 4.0,
-      participants: 18,
-      image:
-        "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80",
-      description:
-        "Discover the breathtaking beauty of the Swiss Alps. From pristine mountain peaks to charming alpine villages, this package offers the perfect blend of adventure and relaxation.",
-      includes: [
-        "Mountain resort accommodation",
-        "Daily breakfast and dinner",
-        "Cable car passes",
-        "Guided hiking tours",
-      ],
-      tripSchedule: [
-        {
-          day: 1,
-          title: "Arrival in Zurich",
-          description: "Transfer to resort. Welcome dinner.",
-        },
-        {
-          day: 2,
-          title: "Jungfraujoch",
-          description: "Train to Top of Europe. Mountain exploration.",
-        },
-        {
-          day: 3,
-          title: "Hiking Adventure",
-          description: "Guided alpine hike. Mountain lake visit.",
-        },
-      ],
-    },
-    {
-      id: 4,
-      title: "Seoul Cultural Exploration",
-      location: "Seoul, South Korea",
-      days: 10,
-      nights: 9,
-      price: 2800,
-      rating: 5.0,
-      participants: 25,
-      image:
-        "https://images.unsplash.com/photo-1538882357723-2d0281d0a3c5?w=600&q=80",
-      description:
-        "Dive deep into Korean culture with our comprehensive Seoul package. Experience ancient palaces, modern K-pop culture, traditional temples, and world-class cuisine.",
-      includes: [
-        "Central Seoul hotel accommodation",
-        "Daily breakfast",
-        "K-pop experience tour",
-        "Palace and temple tours",
-      ],
-      tripSchedule: [
-        {
-          day: 1,
-          title: "Arrival",
-          description: "Hotel check-in. Myeongdong shopping district.",
-        },
-        {
-          day: 2,
-          title: "Palace Tour",
-          description:
-            "Gyeongbokgung Palace, Bukchon Hanok Village. Hanbok experience.",
-        },
-      ],
-    },
-    {
-      id: 5,
-      title: "Parisian Romance",
-      location: "Paris, France",
-      days: 5,
-      nights: 4,
-      price: 1200,
-      rating: 4.5,
-      participants: 30,
-      image:
-        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80",
-      description:
-        "Fall in love with the City of Light. Experience iconic landmarks, world-class museums, exquisite cuisine, and the romantic ambiance that makes Paris unforgettable.",
-      includes: [
-        "Boutique hotel in central Paris",
-        "Daily breakfast",
-        "Seine river cruise",
-        "Louvre Museum skip-the-line tickets",
-      ],
-      tripSchedule: [
-        {
-          day: 1,
-          title: "Arrival",
-          description:
-            "Hotel check-in, evening Seine cruise. Welcome champagne.",
-        },
-        {
-          day: 2,
-          title: "Iconic Paris",
-          description: "Eiffel Tower visit, Champs-Élysées. Arc de Triomphe.",
-        },
-      ],
-    },
-    {
-      id: 6,
-      title: "Tokyo Cultural Adventure",
-      location: "Tokyo, Japan",
-      days: 7,
-      nights: 6,
-      price: 1800,
-      rating: 4.5,
-      participants: 20,
-      image:
-        "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600&q=80",
-      description:
-        "Discover the perfect blend of ancient traditions and modern innovation in Tokyo. From serene temples to bustling districts, experience the heart of Japanese culture.",
-      includes: [
-        "Central Tokyo hotel",
-        "Daily breakfast",
-        "Sumo wrestling experience",
-        "Traditional tea ceremony",
-      ],
-      tripSchedule: [
-        {
-          day: 1,
-          title: "Arrival",
-          description: "Hotel check-in, Shibuya crossing. Robot Restaurant.",
-        },
-        {
-          day: 2,
-          title: "Traditional Tokyo",
-          description: "Senso-ji Temple, tea ceremony. Asakusa district.",
-        },
-      ],
-    },
-  ]);
+  const navigate = useNavigate();
 
-  const [selectedPackage, setSelectedPackage] = useState(packages[0]);
+  // -----------------------------
+  // AUTHENTICATION
+  // -----------------------------
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
+  /* ----- API DATA ----- */
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState("add"); // "add" or "edit"
   const [formData, setFormData] = useState(emptyForm);
+  const [schedule, setSchedule] = useState([{ dayNumber: 1, title: "", description: "" }]);
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -276,23 +63,71 @@ const Packages = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [priceFilter, setPriceFilter] = useState("all");
 
-  // --- FILTERING ---
-  const filtered = packages.filter((p) => {
-    const matchesSearch =
-      p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.location.toLowerCase().includes(searchTerm.toLowerCase());
+  const [flash, setFlash] = useState(null);
+
+  const showFlash = (msg) => {
+    setFlash(msg);
+    setTimeout(() => setFlash(null), 3000);
+  };
+
+  // --- FETCHING ---
+  const fetchPackages = useCallback(async () => {
+    setLoading(true);
+    try {
+      let res;
+      if (searchTerm) {
+        res = await api.get(`/search?keyword=${searchTerm}`);
+      } else {
+        res = await api.get("/packages");
+      }
+      if (res.data.success) {
+        setPackages(res.data.data || []);
+        if (!selectedPackage && res.data.data?.length > 0) {
+          setSelectedPackage(res.data.data[0]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch packages:", err);
+      showFlash("Failed to load packages");
+    } finally {
+      setLoading(false);
+    }
+  }, [searchTerm, selectedPackage]);
+
+  useEffect(() => {
+    fetchPackages();
+  }, [searchTerm, fetchPackages]);
+
+  const fetchCheapest = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/search/cheapest");
+      if (res.data.success) {
+        setPackages(res.data.data || []);
+        showFlash("Showing top 5 cheapest packages");
+      }
+    } catch (err) {
+      showFlash("Failed to fetch cheapest packages");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- FILTERING (Local for Price) ---
+  const filtered = packages.filter(p => {
     const matchesPrice =
       priceFilter === "all" ||
       (priceFilter === "budget" && p.price < 1500) ||
       (priceFilter === "mid" && p.price >= 1500 && p.price < 2500) ||
       (priceFilter === "luxury" && p.price >= 2500);
-    return matchesSearch && matchesPrice;
+    return matchesPrice;
   });
 
   // --- MODAL HELPERS ---
   const openAddModal = () => {
     setModalMode("add");
     setFormData(emptyForm);
+    setSchedule([{ dayNumber: 1, title: "", description: "" }]);
     setImagePreview(null);
     setShowModal(true);
   };
@@ -301,29 +136,38 @@ const Packages = () => {
     setModalMode("edit");
     setFormData({
       title: selectedPackage.title,
-      location: selectedPackage.location,
-      days: selectedPackage.days,
-      nights: selectedPackage.nights,
+      destination: selectedPackage.destination,
+      durationDays: selectedPackage.durationDays,
+      durationNights: selectedPackage.durationNights,
       price: selectedPackage.price,
-      participants: selectedPackage.participants,
-      image: selectedPackage.image,
+      maxPerson: selectedPackage.maxPerson,
+      thumbnailImage: selectedPackage.thumbnailImage,
       description: selectedPackage.description,
-      includes: selectedPackage.includes.join("\n"),
-      tripSchedule: selectedPackage.tripSchedule
-        .map((s) => `${s.day} | ${s.title} | ${s.description}`)
-        .join("\n"),
+      category: selectedPackage.category || "Adventure",
+      includes: (selectedPackage.includes || []).join("\n"),
+      excludes: (selectedPackage.excludes || []).join("\n"),
     });
-    setImagePreview(selectedPackage.image);
+    setSchedule(selectedPackage.travelPlans?.length > 0
+      ? selectedPackage.travelPlans
+      : selectedPackage.tripSchedule?.length > 0
+        ? selectedPackage.tripSchedule
+        : [{ dayNumber: 1, title: "", description: "" }]
+    );
+    setImagePreview(selectedPackage.thumbnailImage);
     setShowModal(true);
   };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size must be less than 5MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        setFormData((prev) => ({ ...prev, image: reader.result }));
+        setFormData(prev => ({ ...prev, thumbnailImage: reader.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -334,91 +178,106 @@ const Packages = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleScheduleChange = (index, field, value) => {
+    const updated = [...schedule];
+    updated[index] = { ...updated[index], [field]: value };
+    setSchedule(updated);
+  };
+
+  const addScheduleItem = () => {
+    const nextDay = schedule.length > 0 ? (Math.max(...schedule.map(s => s.dayNumber)) + 1) : 1;
+    setSchedule([...schedule, { dayNumber: nextDay, title: "", description: "" }]);
+  };
+
+  const removeScheduleItem = (index) => {
+    setSchedule(schedule.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.location) {
-      alert("Please fill in at least Title and Location");
+    if (!formData.title || !formData.destination) {
+      alert("Please fill in at least Title and Destination");
       return;
     }
 
-    const includesArr = formData.includes
+    const includesArr = (formData.includes || "")
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const scheduleArr = formData.tripSchedule
+    const excludesArr = (formData.excludes || "")
       .split("\n")
-      .map((line, idx) => {
-        const parts = line.split("|").map((s) => s.trim());
-        return {
-          day: parts[0] ? parseInt(parts[0], 10) || idx + 1 : idx + 1,
-          title: parts[1] || "Untitled",
-          description: parts[2] || "",
-        };
-      })
-      .filter((s) => s.title);
+      .map(s => s.trim())
+      .filter(Boolean);
 
-    if (modalMode === "add") {
-      const newPkg = {
-        id: Date.now(),
-        title: formData.title,
-        location: formData.location,
-        days: parseInt(formData.days, 10) || 1,
-        nights: parseInt(formData.nights, 10) || 0,
-        price: parseInt(formData.price, 10) || 0,
-        rating: 0,
-        participants: parseInt(formData.participants, 10) || 0,
-        image:
-          formData.image ||
-          "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80",
-        description: formData.description,
-        includes: includesArr,
-        tripSchedule: scheduleArr,
-      };
-      const updated = [...packages, newPkg];
-      setPackages(updated);
-      setSelectedPackage(newPkg);
-    } else {
-      const updatedPkg = {
-        ...selectedPackage,
-        title: formData.title,
-        location: formData.location,
-        days: parseInt(formData.days, 10) || selectedPackage.days,
-        nights: parseInt(formData.nights, 10) || selectedPackage.nights,
-        price: parseInt(formData.price, 10) || selectedPackage.price,
-        participants:
-          parseInt(formData.participants, 10) || selectedPackage.participants,
-        image: formData.image || selectedPackage.image,
-        description: formData.description,
-        includes: includesArr,
-        tripSchedule: scheduleArr,
-      };
-      const updated = packages.map((p) =>
-        p.id === updatedPkg.id ? updatedPkg : p,
-      );
-      setPackages(updated);
-      setSelectedPackage(updatedPkg);
+    // Filter out empty schedule items
+    const cleanSchedule = schedule.filter(s => s.title.trim() || s.description.trim());
+
+    const payload = {
+      title: formData.title,
+      destination: formData.destination,
+      durationDays: parseInt(formData.durationDays, 10) || 1,
+      durationNights: parseInt(formData.durationNights, 10) || 0,
+      price: parseInt(formData.price, 10) || 0,
+      maxPerson: parseInt(formData.maxPerson, 10) || 1,
+      thumbnailImage: formData.thumbnailImage || imagePreview,
+      description: formData.description,
+      category: formData.category,
+      includes: includesArr,
+      excludes: excludesArr,
+      travelPlans: cleanSchedule
+    };
+
+    try {
+      if (modalMode === "add") {
+        const res = await api.post("/packages/create", payload);
+        if (res.data.success) {
+          showFlash("Package created!");
+          fetchPackages();
+          setShowModal(false);
+        }
+      } else {
+        const res = await api.put(`/packages/${selectedPackage._id}`, payload);
+        if (res.data.success) {
+          showFlash("Package updated!");
+          const updatedPkg = res.data.data;
+          setPackages(prev => prev.map(p => p._id === updatedPkg._id ? updatedPkg : p));
+          setSelectedPackage(updatedPkg);
+          setShowModal(false);
+        }
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to save package");
     }
-
-    setShowModal(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!window.confirm(`Delete "${selectedPackage.title}"?`)) return;
-    const updated = packages.filter((p) => p.id !== selectedPackage.id);
-    setPackages(updated);
-    setSelectedPackage(updated.length > 0 ? updated[0] : null);
-    setShowModal(false);
+    try {
+      const res = await api.delete(`/packages/${selectedPackage._id}`);
+      if (res.data.success) {
+        showFlash("Package deleted");
+        const updated = packages.filter(p => p._id !== selectedPackage._id);
+        setPackages(updated);
+        setSelectedPackage(updated.length > 0 ? updated[0] : null);
+        setShowModal(false);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete package");
+    }
   };
 
   return (
     <div className="packages-page-container">
+      {/* --- FLASH MESSAGE --- */}
+      {flash && <div className="svc-flash">{flash}</div>}
+
       {/* --- COLUMN 1: SIDEBAR LIST --- */}
       <div className="packages-sidebar">
         <div className="sidebar-search">
           <input
             type="text"
-            placeholder="Search package, location, etc"
+            placeholder="Search package..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -432,60 +291,50 @@ const Packages = () => {
 
         {showFilters && (
           <div className="filter-dropdown">
-            <label>Price Range</label>
-            <select
-              value={priceFilter}
-              onChange={(e) => setPriceFilter(e.target.value)}
-            >
-              <option value="all">All Prices</option>
-              <option value="budget">Budget (&lt; $1,500)</option>
-              <option value="mid">Mid ($1,500 – $2,500)</option>
-              <option value="luxury">Luxury (&gt; $2,500)</option>
-            </select>
+            <div className="filter-group">
+              <label>Price Range</label>
+              <select value={priceFilter} onChange={(e) => setPriceFilter(e.target.value)}>
+                <option value="all">All Prices</option>
+                <option value="budget">Budget (&lt; $1,500)</option>
+                <option value="mid">Mid ($1,500 – $2,500)</option>
+                <option value="luxury">Luxury (&gt; $2,500)</option>
+              </select>
+            </div>
+            <button className="cheapest-btn" onClick={fetchCheapest}>
+              Top 5 Cheapest
+            </button>
           </div>
         )}
 
         <div className="packages-list">
-          {filtered.map((pkg) => (
+          {loading ? (
+            <div className="sidebar-loading">Loading...</div>
+          ) : filtered.map(pkg => (
             <div
-              key={pkg.id}
-              className={`package-list-item ${selectedPackage?.id === pkg.id ? "active" : ""}`}
+              key={pkg._id}
+              className={`package-list-item ${selectedPackage?._id === pkg._id ? 'active' : ''}`}
               onClick={() => setSelectedPackage(pkg)}
             >
-              <img src={pkg.image} alt={pkg.title} />
+              <img src={pkg.thumbnailImage} alt={pkg.title} />
               <div className="pkg-info">
                 <h4>{pkg.title}</h4>
                 <div className="pkg-meta">
-                  <span>
-                    <MapPin size={10} /> {pkg.location}
-                  </span>
-                  <span>
-                    <Clock size={10} /> {pkg.days} Days / {pkg.nights} Nights
-                  </span>
+                  <span><MapPin size={10} /> {pkg.destination}</span>
+                  <span><Clock size={10} /> {pkg.durationDays}D / {pkg.durationNights}N</span>
                 </div>
                 <div className="pkg-footer">
                   <div className="rating">
-                    <Star size={12} fill="#FACC15" stroke="none" />{" "}
-                    <span>{pkg.rating}</span>
+                    <Star size={12} fill="#FACC15" stroke="none" /> <span>{pkg.rating || "0.0"}</span>
                   </div>
                   <div className="price">
-                    <span>${pkg.price.toLocaleString()}</span>/person
+                    <span>${pkg.price?.toLocaleString()}</span>/pp
                   </div>
                 </div>
               </div>
             </div>
           ))}
-          {filtered.length === 0 && (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "20px",
-                color: "#9ca3af",
-                fontSize: "13px",
-              }}
-            >
-              No packages found
-            </div>
+          {!loading && filtered.length === 0 && (
+            <div className="empty-sidebar">No packages found</div>
           )}
         </div>
 
@@ -499,11 +348,7 @@ const Packages = () => {
         {selectedPackage ? (
           <>
             <div className="hero-image-wrapper">
-              <img
-                src={selectedPackage.image}
-                alt={selectedPackage.title}
-                className="hero-image"
-              />
+              <img src={selectedPackage.thumbnailImage} alt={selectedPackage.title} className="hero-image" />
             </div>
 
             <div className="details-header">
@@ -514,16 +359,12 @@ const Packages = () => {
                     <Star
                       key={i}
                       size={16}
-                      fill={
-                        i < Math.floor(selectedPackage.rating)
-                          ? "#FACC15"
-                          : "#E5E7EB"
-                      }
+                      fill={i < Math.floor(selectedPackage.rating || 0) ? "#FACC15" : "#E5E7EB"}
                       stroke="none"
                     />
                   ))}
-                  <span className="rating-val">{selectedPackage.rating}</span>
-                  <span className="review-count">12,256 ratings</span>
+                  <span className="rating-val">{selectedPackage.rating || "0.0"}</span>
+                  <span className="category-tag">{selectedPackage.category}</span>
                 </div>
               </div>
               <button className="edit-btn" onClick={openEditModal}>
@@ -533,29 +374,23 @@ const Packages = () => {
 
             <div className="info-grid">
               <div className="info-item">
-                <span className="icon">
-                  <MapPin size={16} />
-                </span>
-                <span className="label">Location</span>
-                <span className="val">{selectedPackage.location}</span>
+                <span className="icon"><MapPin size={16} /></span>
+                <span className="label">Destination</span>
+                <span className="val">{selectedPackage.destination}</span>
               </div>
               <div className="info-item">
                 <span className="icon">
                   <Clock size={16} />
                 </span>
                 <span className="label">Duration</span>
-                <span className="val">
-                  {selectedPackage.days} Days / {selectedPackage.nights} Nights
-                </span>
+                <span className="val">{selectedPackage.durationDays}D / {selectedPackage.durationNights}N</span>
               </div>
               <div className="info-item">
                 <span className="icon">
                   <Users size={16} />
                 </span>
                 <span className="label">Quota</span>
-                <span className="val">
-                  {selectedPackage.participants} participants
-                </span>
+                <span className="val">{selectedPackage.maxPerson} pax</span>
               </div>
               <div className="info-item">
                 <span className="icon">
@@ -566,31 +401,42 @@ const Packages = () => {
                   ${selectedPackage.price}{" "}
                   <span className="text-gray">per person</span>
                 </span>
-              </div>
-            </div>
+              </div >
+            </div >
 
             <div className="section">
               <h5>ABOUT</h5>
-              <p>{selectedPackage.description}</p>
+              <p className="description-text">{selectedPackage.description}</p>
             </div>
 
-            <div className="section">
-              <h5>INCLUDES</h5>
-              <div className="includes-grid">
-                {selectedPackage.includes.map((inc, i) => (
-                  <div key={i} className="include-item">
-                    <CheckCircle2 size={18} className="check-icon" />
-                    <span>{inc}</span>
-                  </div>
-                ))}
+            <div className="inclusion-row">
+              <div className="section half">
+                <h5>INCLUDES</h5>
+                <div className="includes-grid">
+                  {(selectedPackage.includes || []).map((inc, i) => (
+                    <div key={i} className="include-item">
+                      <CheckCircle2 size={16} className="check-icon green" />
+                      <span>{inc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="section half">
+                <h5>EXCLUDES</h5>
+                <div className="includes-grid">
+                  {(selectedPackage.excludes || []).map((exc, i) => (
+                    <div key={i} className="include-item">
+                      <X size={16} className="check-icon red" />
+                      <span>{exc}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </>
         ) : (
-          <div
-            style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}
-          >
-            No package selected. Add one to get started!
+          <div className="no-selection-state">
+            {loading ? "Loading details..." : "Select a package to view details"}
           </div>
         )}
       </div>
@@ -599,190 +445,150 @@ const Packages = () => {
       <div className="trip-schedule">
         <h3>Trip Schedule</h3>
         <div className="timeline">
-          {selectedPackage &&
-            selectedPackage.tripSchedule &&
-            selectedPackage.tripSchedule.map((item, i) => (
-              <div key={i} className="timeline-item">
-                <div className="timeline-dot"></div>
-                <div className="timeline-content">
-                  <div className="day-header">
-                    <span className="day-num">Day {item.day}</span>
-                    <span className="separator">-</span>
-                    <span className="day-title">{item.title}</span>
-                  </div>
-                  <div className="day-body">
-                    <span className="activity-label">Activity:</span>
-                    <p>{item.description}</p>
-                  </div>
+          {selectedPackage && (selectedPackage.travelPlans || selectedPackage.tripSchedule || []).map((item, i) => (
+            <div key={i} className="timeline-item">
+              <div className="timeline-dot"></div>
+              <div className="timeline-content">
+                <div className="day-header">
+                  <span className="day-num">Day {item.dayNumber || item.day || i + 1}</span>
+                  <span className="separator">-</span>
+                  <span className="day-title">{item.title}</span>
+                </div>
+                <div className="day-body">
+                  <p>{item.description}</p>
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
+          {(!selectedPackage || (!selectedPackage.travelPlans?.length && !selectedPackage.tripSchedule?.length)) && (
+            <div className="empty-schedule">No schedule added</div>
+          )}
         </div>
       </div>
 
       {/* --- MODAL (ADD / EDIT) --- */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>
-                {modalMode === "add"
-                  ? "Add New Package"
-                  : `Edit: ${selectedPackage.title}`}
-              </h3>
-              <button
-                className="modal-close"
-                onClick={() => setShowModal(false)}
-              >
-                <X size={20} />
-              </button>
+              <h3>{modalMode === "add" ? "Add New Package" : `Edit: ${formData.title}`}</h3>
+              <button className="modal-close" onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
+
             <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Package Title *</label>
-                  <input
-                    name="title"
-                    value={formData.title}
-                    onChange={handleFormChange}
-                    placeholder="e.g. Venice Dreams"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Location *</label>
-                  <input
-                    name="location"
-                    value={formData.location}
-                    onChange={handleFormChange}
-                    placeholder="e.g. Venice, Italy"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Days</label>
-                  <input
-                    name="days"
-                    type="number"
-                    value={formData.days}
-                    onChange={handleFormChange}
-                    placeholder="6"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Nights</label>
-                  <input
-                    name="nights"
-                    type="number"
-                    value={formData.nights}
-                    onChange={handleFormChange}
-                    placeholder="5"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Price ($)</label>
-                  <input
-                    name="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={handleFormChange}
-                    placeholder="1500"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Participants</label>
-                  <input
-                    name="participants"
-                    type="number"
-                    value={formData.participants}
-                    onChange={handleFormChange}
-                    placeholder="20"
-                  />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Package Image</label>
-                <div
-                  className="image-upload-area"
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="image-upload-preview"
-                    />
-                  ) : (
-                    <div className="image-upload-placeholder">
-                      <Upload size={24} />
-                      <span>Click to upload image</span>
-                      <span className="upload-hint">JPG, PNG or WEBP</span>
+              <div className="form-sections-wrapper">
+                <div className="modal-section-main">
+                  <div className="form-grid">
+                    <div className="form-group span-2">
+                      <label>Package Title*</label>
+                      <input name="title" value={formData.title} onChange={handleFormChange} placeholder="e.g. Alpine Escape" required />
                     </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    style={{ display: "none" }}
-                  />
+                    <div className="form-group span-2">
+                      <label>Destination*</label>
+                      <input name="destination" value={formData.destination} onChange={handleFormChange} placeholder="e.g. Swiss Alps" required />
+                    </div>
+                    <div className="form-group">
+                      <label>Days</label>
+                      <input name="durationDays" type="number" value={formData.durationDays} onChange={handleFormChange} placeholder="6" />
+                    </div>
+                    <div className="form-group">
+                      <label>Nights</label>
+                      <input name="durationNights" type="number" value={formData.durationNights} onChange={handleFormChange} placeholder="5" />
+                    </div>
+                    <div className="form-group">
+                      <label>Price ($)</label>
+                      <input name="price" type="number" value={formData.price} onChange={handleFormChange} placeholder="1500" />
+                    </div>
+                    <div className="form-group">
+                      <label>Capacity</label>
+                      <input name="maxPerson" type="number" value={formData.maxPerson} onChange={handleFormChange} placeholder="12" />
+                    </div>
+                    <div className="form-group span-2">
+                      <label>Category</label>
+                      <select name="category" value={formData.category} onChange={handleFormChange}>
+                        <option>Adventure</option>
+                        <option>Family</option>
+                        <option>Honeymoon</option>
+                        <option>Luxury</option>
+                        <option>Budget</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Thumbnail Image</label>
+                    <div className="image-dropzone" onClick={() => fileInputRef.current.click()}>
+                      {imagePreview ? (
+                        <img src={imagePreview} className="dropzone-preview" alt="Preview" />
+                      ) : (
+                        <div className="dropzone-placeholder">
+                          <Upload size={24} />
+                          <span>Click to upload thumbnail</span>
+                        </div>
+                      )}
+                      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Description</label>
+                    <textarea name="description" value={formData.description} onChange={handleFormChange} rows={3} placeholder="Describe the trip experience..." />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group half">
+                      <label>Includes (one per line)</label>
+                      <textarea name="includes" value={formData.includes} onChange={handleFormChange} rows={4} placeholder="Hotel&#10;Meals" />
+                    </div>
+                    <div className="form-group half">
+                      <label>Excludes (one per line)</label>
+                      <textarea name="excludes" value={formData.excludes} onChange={handleFormChange} rows={4} placeholder="Flight&#10;Insurance" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-section-schedule">
+                  <div className="schedule-header-row">
+                    <h4>Trip Schedule</h4>
+                    <button type="button" className="add-day-btn" onClick={addScheduleItem}>+ Add Day</button>
+                  </div>
+
+                  <div className="schedule-list-edit">
+                    {schedule.map((item, index) => (
+                      <div key={index} className="schedule-edit-card">
+                        <div className="card-header">
+                          <div className="day-pill">Day {item.dayNumber}</div>
+                          <button type="button" className="remove-day-btn" onClick={() => removeScheduleItem(index)}><X size={14} /></button>
+                        </div>
+                        <div className="card-body">
+                          <input
+                            className="schedule-title-input"
+                            value={item.title}
+                            onChange={(e) => handleScheduleChange(index, 'title', e.target.value)}
+                            placeholder="Title (e.g. Arrival)"
+                          />
+                          <textarea
+                            className="schedule-desc-textarea"
+                            value={item.description}
+                            onChange={(e) => handleScheduleChange(index, 'description', e.target.value)}
+                            placeholder="Details..."
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleFormChange}
-                  rows={3}
-                  placeholder="About this package..."
-                />
-              </div>
-              <div className="form-group">
-                <label>Includes (one per line)</label>
-                <textarea
-                  name="includes"
-                  value={formData.includes}
-                  onChange={handleFormChange}
-                  rows={3}
-                  placeholder="Hotel accommodation&#10;Daily breakfast&#10;Guided tours"
-                />
-              </div>
-              <div className="form-group">
-                <label>
-                  Trip Schedule (day | title | description, one per line)
-                </label>
-                <textarea
-                  name="tripSchedule"
-                  value={formData.tripSchedule}
-                  onChange={handleFormChange}
-                  rows={4}
-                  placeholder="1 | Arrival | Transfer to hotel&#10;2 | City Tour | Guided tour"
-                />
-              </div>
-              <div className="modal-actions">
+
+              <div className="modal-footer">
                 {modalMode === "edit" && (
-                  <button
-                    type="button"
-                    className="delete-btn"
-                    onClick={handleDelete}
-                  >
-                    <Trash2 size={16} /> Delete
-                  </button>
+                  <button type="button" className="delete-pkg-btn" onClick={handleDelete}><Trash2 size={16} /> Delete</button>
                 )}
-                <div style={{ flex: 1 }} />
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="save-btn">
-                  {modalMode === "add" ? "Add Package" : "Save Changes"}
-                </button>
+                <div className="footer-right">
+                  <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
+                  <button type="submit" className="save-btn">{modalMode === "add" ? "Create Package" : "Update Package"}</button>
+                </div>
               </div>
             </form>
           </div>
