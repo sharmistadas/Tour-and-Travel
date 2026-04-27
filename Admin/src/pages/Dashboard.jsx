@@ -1,11 +1,9 @@
-import React, { useState, useMemo } from "react";
+﻿import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiCalendar,
   FiUsers,
   FiDollarSign,
-  FiTrendingUp,
-  FiTrendingDown,
   FiArrowUpRight,
   FiArrowDownRight,
   FiChevronLeft,
@@ -21,12 +19,7 @@ import {
   FiUser,
   FiClock,
 } from "react-icons/fi";
-import {
-  FaFacebookF,
-  FaTwitter,
-  FaInstagram,
-  FaYoutube,
-} from "react-icons/fa";
+import { FaFacebookF, FaTwitter, FaInstagram, FaYoutube } from "react-icons/fa";
 import {
   LineChart,
   PieChart,
@@ -38,21 +31,19 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
-  ReferenceLine,
 } from "recharts";
 import api from "../utils/api";
 import "../styles/Dashboard.css";
 
 /* ═══════════════════════════════════════════════
-   HELPERS — calendar generation & seeded random
+   HELPERS
    ═══════════════════════════════════════════════ */
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
 ];
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// Deterministic pseudo-random from a seed so same date always gives same numbers
 function seededRand(seed) {
   let h = seed | 0;
   return () => {
@@ -79,14 +70,13 @@ function buildCalendarWeeks(year, month) {
   return weeks;
 }
 
-/* Generate consistent daily metrics from a date seed */
 function metricsForDay(y, m, d) {
   const seed = y * 10000 + (m + 1) * 100 + d;
   const rng = seededRand(seed);
   return {
-    bookings: Math.round(20 + rng() * 80),       // 20–100
-    customers: Math.round(10 + rng() * 50),       // 10–60
-    earnings: Math.round(300 + rng() * 1200),     // 300–1500
+    bookings: Math.round(20 + rng() * 80),
+    customers: Math.round(10 + rng() * 50),
+    earnings: Math.round(300 + rng() * 1200),
   };
 }
 
@@ -94,9 +84,7 @@ function sumMetrics(year, month, startDay, endDay) {
   let bookings = 0, customers = 0, earnings = 0;
   for (let d = startDay; d <= endDay; d++) {
     const m = metricsForDay(year, month, d);
-    bookings += m.bookings;
-    customers += m.customers;
-    earnings += m.earnings;
+    bookings += m.bookings; customers += m.customers; earnings += m.earnings;
   }
   return { bookings, customers, earnings };
 }
@@ -107,14 +95,13 @@ function sumMetrics(year, month, startDay, endDay) {
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  /* ── Calendar state — starts on today ── */
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
   const [calMonth, setCalMonth] = useState(now.getMonth());
   const [selectedDate, setSelectedDate] = useState(now.getDate());
-  const [analysisMode, setAnalysisMode] = useState("Week"); // Day | Week | Month
+  const [analysisMode, setAnalysisMode] = useState("Week");
 
-  /* ── API Data States ── */
+  // API Data States
   const [overviewData, setOverviewData] = useState(null);
   const [revenueStats, setRevenueStats] = useState([]);
   const [topDests, setTopDests] = useState([]);
@@ -123,50 +110,63 @@ const Dashboard = () => {
   const [recentActs, setRecentActs] = useState([]);
   const [pkgs, setPkgs] = useState([]);
   const [calendarEvts, setCalendarEvts] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  // ✅ Refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // ─── Core fetch function ───
+  const fetchDashboardData = React.useCallback(async () => {
+    try {
+      const [
+        overviewRes, revenueRes, topDestRes, recentBkRes,
+        upcomingRes, activityRes, packageRes, calendarRes,
+      ] = await Promise.all([
+        api.get("/dashboard/overview"),
+        api.get("/dashboard/revenue"),
+        api.get("/dashboard/top-destinations"),
+        api.get("/dashboard/recent-bookings"),
+        api.get("/dashboard/upcoming-trips"),
+        api.get("/dashboard/recent-activity"),
+        api.get("/dashboard/travel-packages"),
+        api.get("/dashboard/booking-calender"),
+      ]);
+
+      if (overviewRes.data.success) setOverviewData(overviewRes.data.data);
+      if (revenueRes.data.success) setRevenueStats(revenueRes.data.currentWeek.days);
+      if (topDestRes.data.success) setTopDests(topDestRes.data.data);
+      if (recentBkRes.data.success) setRecentBkngs(recentBkRes.data.data);
+      if (upcomingRes.data.success) setUpcomingBkngs(upcomingRes.data.data);
+      if (activityRes.data.success) setRecentActs(activityRes.data.data);
+      if (packageRes.data.success) setPkgs(packageRes.data.data);
+      if (calendarRes.data.success) setCalendarEvts(calendarRes.data.data);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    }
+  }, []);
 
   React.useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        const [
-          overviewRes,
-          revenueRes,
-          topDestRes,
-          recentBkRes,
-          upcomingRes,
-          activityRes,
-          packageRes,
-          calendarRes
-        ] = await Promise.all([
-          api.get("/dashboard/overview"),
-          api.get("/dashboard/revenue"),
-          api.get("/dashboard/top-destinations"),
-          api.get("/dashboard/recent-bookings"),
-          api.get("/dashboard/upcoming-trips"),
-          api.get("/dashboard/recent-activity"),
-          api.get("/dashboard/travel-packages"),
-          api.get("/dashboard/booking-calender")
-        ]);
-
-        if (overviewRes.data.success) setOverviewData(overviewRes.data.data);
-        if (revenueRes.data.success) setRevenueStats(revenueRes.data.currentWeek.days);
-        if (topDestRes.data.success) setTopDests(topDestRes.data.data);
-        if (recentBkRes.data.success) setRecentBkngs(recentBkRes.data.data);
-        if (upcomingRes.data.success) setUpcomingBkngs(upcomingRes.data.data);
-        if (activityRes.data.success) setRecentActs(activityRes.data.data);
-        if (packageRes.data.success) setPkgs(packageRes.data.data);
-        if (calendarRes.data.success) setCalendarEvts(calendarRes.data.data);
-
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
-  }, []);
+  }, [fetchDashboardData]);
+
+  // ✅ FIXED handleRefresh — clears all data then re-fetches, no page reload
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+
+    // Clear all data immediately so UI shows loading/empty state
+    setOverviewData(null);
+    setRevenueStats([]);
+    setTopDests([]);
+    setRecentBkngs([]);
+    setUpcomingBkngs([]);
+    setRecentActs([]);
+    setPkgs([]);
+    setCalendarEvts([]);
+
+    // Re-fetch everything fresh from API
+    await fetchDashboardData();
+
+    setIsRefreshing(false);
+  };
 
   const calWeeks = useMemo(() => buildCalendarWeeks(calYear, calMonth), [calYear, calMonth]);
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
@@ -182,66 +182,43 @@ const Dashboard = () => {
     setSelectedDate(1);
   };
 
-  /* ── Compute selected range ── */
   const selectedRange = useMemo(() => {
-    if (analysisMode === "Day") {
-      return { start: selectedDate, end: selectedDate };
-    }
+    if (analysisMode === "Day") return { start: selectedDate, end: selectedDate };
     if (analysisMode === "Week") {
-      const dow = new Date(calYear, calMonth, selectedDate).getDay(); // 0=Sun
+      const dow = new Date(calYear, calMonth, selectedDate).getDay();
       const start = Math.max(1, selectedDate - dow);
       const end = Math.min(daysInMonth, selectedDate + (6 - dow));
       return { start, end };
     }
-    // Month
     return { start: 1, end: daysInMonth };
   }, [analysisMode, selectedDate, calYear, calMonth, daysInMonth]);
 
-  /* ── Dynamic stats ── */
   const periodMetrics = useMemo(
     () => sumMetrics(calYear, calMonth, selectedRange.start, selectedRange.end),
-    [calYear, calMonth, selectedRange]
+    [calYear, calMonth, selectedRange],
   );
-
-  // Previous period for comparison
-  const prevPeriodMetrics = useMemo(() => {
-    const span = selectedRange.end - selectedRange.start + 1;
-    const prevEnd = Math.max(1, selectedRange.start - 1);
-    const prevStart = Math.max(1, prevEnd - span + 1);
-    return sumMetrics(calYear, calMonth, prevStart, prevEnd);
-  }, [calYear, calMonth, selectedRange]);
-
-  const pctChange = (cur, prev) => {
-    if (prev === 0) return "+0.00%";
-    const pct = ((cur - prev) / prev * 100).toFixed(2);
-    return pct >= 0 ? `+${pct}%` : `${pct}%`;
-  };
 
   const stats = [
     {
       title: "Total Booking",
       value: overviewData ? overviewData.totalBookings.toLocaleString() : "0",
-      change: "+0.00%",
-      trend: "up",
+      change: "+0.00%", trend: "up",
       icon: <FiCalendar size={20} />, bg: "#EEF2FF", color: "#4F46E5",
     },
     {
       title: "Total Packages",
       value: overviewData ? overviewData.totalPackages.toLocaleString() : "0",
-      change: "+0.00%",
-      trend: "up",
+      change: "+0.00%", trend: "up",
       icon: <FiUsers size={20} />, bg: "#D1FAE5", color: "#10B981",
     },
     {
       title: "Total Earnings",
       value: overviewData ? `$${overviewData.totalEarnings.toLocaleString()}` : "$0",
-      change: "+0.00%",
-      trend: "up",
+      change: "+0.00%", trend: "up",
       icon: <FiDollarSign size={20} />, bg: "#FEF3C7", color: "#F59E0B",
     },
   ];
 
-  /* ── Period label for stats row ── */
   const periodLabel = useMemo(() => {
     const mName = MONTH_NAMES[calMonth];
     if (analysisMode === "Day") return `${mName} ${selectedDate}, ${calYear}`;
@@ -249,12 +226,11 @@ const Dashboard = () => {
     return `${mName} ${calYear}`;
   }, [analysisMode, selectedDate, calMonth, calYear, selectedRange]);
 
-  /* ── Mock Revenue fallback ── */
   const revenueDataMock = useMemo(() => {
     if (analysisMode === "Day") {
       const seed = calYear * 10000 + (calMonth + 1) * 100 + selectedDate;
       const rng = seededRand(seed + 999);
-      return ["8AM", "9AM", "10AM", "11AM", "12PM", "1PM", "2PM", "3PM", "4PM", "5PM", "6PM"].map(h => ({
+      return ["8AM","9AM","10AM","11AM","12PM","1PM","2PM","3PM","4PM","5PM","6PM"].map((h) => ({
         day: h, revenue: Math.round(40 + rng() * 160),
       }));
     }
@@ -266,7 +242,7 @@ const Dashboard = () => {
       }
       return days;
     }
-    const weekLabels = ["Wk 1", "Wk 2", "Wk 3", "Wk 4", "Wk 5"];
+    const weekLabels = ["Wk 1","Wk 2","Wk 3","Wk 4","Wk 5"];
     const result = [];
     let wk = 0;
     for (let d = 1; d <= daysInMonth; d += 7) {
@@ -278,38 +254,26 @@ const Dashboard = () => {
     return result;
   }, [analysisMode, selectedDate, calYear, calMonth, selectedRange, daysInMonth]);
 
-  /* ── Revenue chart data ── */
   const chartData = useMemo(() => {
     if (revenueStats && revenueStats.length > 0) {
-      return revenueStats.map(d => ({
-        day: d.day,
-        revenue: d.revenue
-      }));
+      return revenueStats.map((d) => ({ day: d.day, revenue: d.revenue }));
     }
     return revenueDataMock;
   }, [revenueStats, revenueDataMock]);
 
-  const maxRevenue = Math.max(...chartData.map(r => r.revenue), 100);
+  const maxRevenue = Math.max(...chartData.map((r) => r.revenue), 100);
   const yMax = Math.ceil(maxRevenue / 200) * 200;
-  const yTicks = Array.from({ length: 5 }, (_, i) => Math.round(yMax / 4 * i));
+  const yTicks = Array.from({ length: 5 }, (_, i) => Math.round((yMax / 4) * i));
 
-  /* ── Highlight dates in the selected range ── */
-  const highlightedDates = useMemo(() => {
-    const set = new Set();
-    for (let d = selectedRange.start; d <= selectedRange.end; d++) set.add(d);
-    return set;
-  }, [selectedRange]);
-
-  // ─── Destinations ───
   const destinations = useMemo(() => {
     if (topDests && topDests.length > 0) {
-      const colors = ["#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#DBEAFE"];
+      const colors = ["#3B82F6","#60A5FA","#93C5FD","#BFDBFE","#DBEAFE"];
       const total = topDests.reduce((sum, d) => sum + d.totalBookings, 0);
       return topDests.map((d, i) => ({
         name: d._id || "Unknown",
         pct: total > 0 ? Math.round((d.totalBookings / total) * 100) : 0,
         people: `${d.totalBookings} Bookings`,
-        color: colors[i % colors.length]
+        color: colors[i % colors.length],
       }));
     }
     return [
@@ -320,16 +284,18 @@ const Dashboard = () => {
     ];
   }, [topDests]);
 
-  /* ── Upcoming Trips ── */
   const displayUpcomingTrips = useMemo(() => {
     if (upcomingBkngs && upcomingBkngs.length > 0) {
       return upcomingBkngs.map((t, i) => ({
         tag: t.package?.title || "Trip",
         loc: t.package?.destination || "Unknown Location",
-        date: new Date(t.startDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }) + " - " + new Date(t.endDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }),
+        date:
+          new Date(t.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) +
+          " - " +
+          new Date(t.endDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
         users: `+${t.participants || 0}`,
         img: t.package?.thumbnailImage || "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=120&h=80&fit=crop",
-        active: i === 0
+        active: i === 0,
       }));
     }
     return [
@@ -339,25 +305,23 @@ const Dashboard = () => {
       { tag: "City Highlights", loc: "New York, USA", date: "20 - 25 July", users: "+22", img: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=120&h=80&fit=crop" },
     ];
   }, [upcomingBkngs]);
+
   const [showTripForm, setShowTripForm] = useState(false);
   const [tripForm, setTripForm] = useState({ tag: "", loc: "", date: "", users: "" });
 
   const handleAddTrip = () => {
     if (!tripForm.tag || !tripForm.loc) { alert("Please fill in Trip Name and Location"); return; }
     const newTrip = {
-      tag: tripForm.tag,
-      loc: tripForm.loc,
-      date: tripForm.date || "TBD",
-      users: tripForm.users || "+0",
+      tag: tripForm.tag, loc: tripForm.loc,
+      date: tripForm.date || "TBD", users: tripForm.users || "+0",
       img: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=120&h=80&fit=crop",
       active: false,
     };
-    setUpcomingTrips([newTrip, ...upcomingTrips]);
+    setUpcomingBkngs((prev) => [newTrip, ...prev]);
     setTripForm({ tag: "", loc: "", date: "", users: "" });
     setShowTripForm(false);
   };
 
-  /* ── Messages ── */
   const messages = [
     { name: "Europia Hotel", preview: "We are pleased to announc...", time: "9:00 AM" },
     { name: "Global Travel Co", preview: "We have updated our comm...", time: "2:30 PM" },
@@ -368,15 +332,14 @@ const Dashboard = () => {
     { name: "Alexandra Green", preview: "Our company is interested i...", time: "3:45 PM" },
   ];
 
-  /* ── Travel Packages ── */
   const travelPackagesList = useMemo(() => {
     if (pkgs && pkgs.length > 0) {
-      return pkgs.map(p => ({
+      return pkgs.map((p) => ({
         title: p.category || "Tour",
         dest: p.title || p.location,
         dur: `${p.durationDays} Days / ${p.durationNights} Nights`,
         price: `$${p.price.toLocaleString()}`,
-        img: p.thumbnailImage || "https://images.unsplash.com/photo-1534274867514-d5b47ef89ed7?w=300&h=180&fit=crop"
+        img: p.thumbnailImage || "https://images.unsplash.com/photo-1534274867514-d5b47ef89ed7?w=300&h=180&fit=crop",
       }));
     }
     return [
@@ -386,16 +349,16 @@ const Dashboard = () => {
     ];
   }, [pkgs]);
 
-  /* ── Recent Bookings ── */
   const bookingsList = useMemo(() => {
     if (recentBkngs && recentBkngs.length > 0) {
-      return recentBkngs.map(b => ({
-        name: b.travelerName,
-        pkg: b.packageName,
-        dur: b.duration || "N/A",
-        date: new Date(b.startDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }) + " - " + new Date(b.endDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short' }),
+      return recentBkngs.map((b) => ({
+        name: b.travelerName, pkg: b.packageName, dur: b.duration || "N/A",
+        date:
+          new Date(b.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) +
+          " - " +
+          new Date(b.endDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
         price: `$${b.price.toLocaleString()}`,
-        status: b.status.charAt(0).toUpperCase() + b.status.slice(1)
+        status: b.status.charAt(0).toUpperCase() + b.status.slice(1),
       }));
     }
     return [
@@ -407,29 +370,15 @@ const Dashboard = () => {
     ];
   }, [recentBkngs]);
 
-  /* ── Recent Activity ── */
   const activitiesList = useMemo(() => {
     if (recentActs && recentActs.length > 0) {
-      const typeIcons = {
-        booking: <FiEdit />,
-        confirmed: <FiCheckSquare />,
-        payment: <FiCreditCard />,
-        cancelled: <FiXSquare />,
-        review: <FiStar />
-      };
-      const typeColors = {
-        booking: "#4F46E5",
-        confirmed: "#10B981",
-        payment: "#F59E0B",
-        cancelled: "#EF4444",
-        review: "#8B5CF6"
-      };
-
-      return recentActs.map(a => ({
+      const typeIcons = { booking: <FiEdit />, confirmed: <FiCheckSquare />, payment: <FiCreditCard />, cancelled: <FiXSquare />, review: <FiStar /> };
+      const typeColors = { booking: "#4F46E5", confirmed: "#10B981", payment: "#F59E0B", cancelled: "#EF4444", review: "#8B5CF6" };
+      return recentActs.map((a) => ({
         icon: typeIcons[a.type] || <FiClock />,
         color: typeColors[a.type] || "#6B7280",
         text: a.message,
-        time: new Date(a.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        time: new Date(a.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       }));
     }
     return [
@@ -441,7 +390,6 @@ const Dashboard = () => {
     ];
   }, [recentActs]);
 
-  /* ── Trip breakdown for the Total Trips card ── */
   const tripBreakdown = useMemo(() => {
     if (overviewData && overviewData.tripStats) {
       const { Doned, Booked, cancelled } = overviewData.tripStats;
@@ -460,25 +408,24 @@ const Dashboard = () => {
       <div className="db-grid">
         {/* ═══════ LEFT + CENTER AREA ═══════ */}
         <div className="db-main">
-
-          {/* ── STATS ROW ── */}
+          {/* Stats Header */}
           <div className="db-stats-header">
             <div className="period-info">
-              <span className="period-label"><FiCalendar size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} /> {periodLabel}</span>
+              <span className="period-label">
+                <FiCalendar size={14} style={{ marginRight: 4, verticalAlign: "middle" }} /> {periodLabel}
+              </span>
               <span className="period-mode">{analysisMode} view</span>
             </div>
-            <div className="analysis-toggle">
-              {["Day", "Week", "Month"].map(m => (
-                <button
-                  key={m}
-                  className={`toggle-btn ${analysisMode === m ? "active" : ""}`}
-                  onClick={() => setAnalysisMode(m)}
-                >
-                  {m}
-                </button>
-              ))}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              <div className="analysis-toggle">
+                {["Day", "Week", "Month"].map((m) => (
+                  <button key={m} className={`toggle-btn ${analysisMode === m ? "active" : ""}`} onClick={() => setAnalysisMode(m)}>{m}</button>
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* Stats Row */}
           <div className="db-stats-row">
             {stats.map((s, i) => (
               <div key={i} className="db-stat-card">
@@ -488,9 +435,7 @@ const Dashboard = () => {
                   <div className="stat-value-row">
                     <h3>{s.value}</h3>
                     <span className={`stat-badge ${s.trend}`}>
-                      {s.trend === "up"
-                        ? <FiArrowUpRight size={14} strokeWidth={2.5} />
-                        : <FiArrowDownRight size={14} strokeWidth={2.5} />}
+                      {s.trend === "up" ? <FiArrowUpRight size={14} strokeWidth={2.5} /> : <FiArrowDownRight size={14} strokeWidth={2.5} />}
                       {s.change}
                     </span>
                   </div>
@@ -499,9 +444,8 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* ── REVENUE + DESTINATIONS ROW ── */}
+          {/* Revenue + Destinations */}
           <div className="db-row-2">
-            {/* Revenue */}
             <div className="db-card db-revenue">
               <div className="db-card-head">
                 <h4>Revenue Overview</h4>
@@ -522,15 +466,8 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Top Destinations */}
             <div className="db-card db-destinations">
-              <div className="db-card-head">
-                <h4>Top Destinations</h4>
-                {/* <select className="db-select" value={selectedDestMonth} onChange={e => setSelectedDestMonth(e.target.value)}>
-                  <option>This Month</option>
-                  <option>Last Month</option>
-                </select> */}
-              </div>
+              <div className="db-card-head"><h4>Top Destinations</h4></div>
               <div className="dest-wrap">
                 <div className="dest-donut">
                   <ResponsiveContainer width={180} height={180}>
@@ -556,7 +493,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* ── TOTAL TRIPS + MESSAGES ROW ── */}
+          {/* Total Trips + Messages */}
           <div className="db-row-3">
             <div className="db-card db-trips-summary">
               <div className="trips-top">
@@ -578,19 +515,13 @@ const Dashboard = () => {
             </div>
 
             <div className="db-card db-messages">
-              <div className="db-card-head">
-                <h4>Messages</h4>
-                <span className="dots">•••</span>
-              </div>
+              <div className="db-card-head"><h4>Messages</h4><span className="dots">•••</span></div>
               <div className="msg-list">
                 {messages.map((m, i) => (
                   <div key={i} className="msg-row">
                     <div className="msg-avatar">{m.name.charAt(0)}</div>
                     <div className="msg-body">
-                      <div className="msg-top">
-                        <b>{m.name}</b>
-                        <span className="msg-time">{m.time}</span>
-                      </div>
+                      <div className="msg-top"><b>{m.name}</b><span className="msg-time">{m.time}</span></div>
                       <p>{m.preview}</p>
                     </div>
                   </div>
@@ -599,15 +530,13 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* ── TRAVEL PACKAGES ── */}
+          {/* Travel Packages */}
           <div className="db-card db-packages-section">
             <div className="db-card-head">
               <h4>Travel Packages</h4>
               <div className="pkg-actions">
                 <span className="sort-lbl">Sort by:</span>
-                <select className="db-select-sm">
-                  <option>Latest</option>
-                </select>
+                <select className="db-select-sm"><option>Latest</option></select>
                 <button className="view-all-btn" onClick={() => navigate("/tour-packages")}>View All</button>
               </div>
             </div>
@@ -619,12 +548,9 @@ const Dashboard = () => {
                     <span className="pkg-tag">{p.title}</span>
                   </div>
                   <h5>{p.dest}</h5>
-                  <span className="pkg-dur"><FiClock size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} /> {p.dur}</span>
+                  <span className="pkg-dur"><FiClock size={13} style={{ marginRight: 4, verticalAlign: "middle" }} /> {p.dur}</span>
                   <div className="pkg-foot">
-                    <div>
-                      <b className="pkg-price">{p.price}</b>
-                      <span className="per-p">per person</span>
-                    </div>
+                    <div><b className="pkg-price">{p.price}</b><span className="per-p">per person</span></div>
                     <button className="see-detail" onClick={() => navigate("/tour-packages")}>See Detail</button>
                   </div>
                 </div>
@@ -632,37 +558,24 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* ── RECENT BOOKINGS ── */}
+          {/* Recent Bookings */}
           <div className="db-card db-recent-bookings">
             <div className="db-card-head">
               <h4>Recent Bookings</h4>
               <div className="bk-actions">
-                <div className="bk-search">
-                  <FiSearch size={14} />
-                  <input placeholder="Search anything" />
-                </div>
+                <div className="bk-search"><FiSearch size={14} /><input placeholder="Search anything" /></div>
                 <button className="view-all-btn" onClick={() => navigate("/bookings")}>View All</button>
               </div>
             </div>
             <table className="bk-table">
               <thead>
-                <tr>
-                  <th>Name ↕</th>
-                  <th>Package ↕</th>
-                  <th>Duration ↕</th>
-                  <th>Date ↕</th>
-                  <th>Price ↕</th>
-                  <th>Status ↕</th>
-                </tr>
+                <tr><th>Name ↕</th><th>Package ↕</th><th>Duration ↕</th><th>Date ↕</th><th>Price ↕</th><th>Status ↕</th></tr>
               </thead>
               <tbody>
                 {bookingsList.map((b, i) => (
                   <tr key={i}>
-                    <td>{b.name}</td>
-                    <td>{b.pkg}</td>
-                    <td>{b.dur}</td>
-                    <td>{b.date}</td>
-                    <td>{b.price}</td>
+                    <td>{b.name}</td><td>{b.pkg}</td><td>{b.dur}</td>
+                    <td>{b.date}</td><td>{b.price}</td>
                     <td><span className={`pill ${b.status.toLowerCase()}`}>{b.status}</span></td>
                   </tr>
                 ))}
@@ -670,17 +583,30 @@ const Dashboard = () => {
             </table>
           </div>
 
-          {/* ── FOOTER ── */}
+          {/* Footer */}
           <footer className="db-footer">
             <p>Copyright © 2024 Peterdraw &nbsp; Privacy Policy &nbsp; Term and conditions &nbsp; Contact</p>
-            <div className="footer-social">
-              <FaFacebookF /> <FaTwitter /> <FaInstagram /> <FaYoutube />
-            </div>
+            <div className="footer-social"><FaFacebookF /> <FaTwitter /> <FaInstagram /> <FaYoutube /></div>
           </footer>
         </div>
 
         {/* ═══════ RIGHT SIDEBAR ═══════ */}
         <div className="db-right">
+
+          {/* ✅ FIXED Refresh Button */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "8px" }}>
+            <button
+              type="button"
+              className={`admin-refresh-btn ${isRefreshing ? "refreshing" : ""}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              title="Refresh dashboard"
+            >
+              <span className={`rfr-icon ${isRefreshing ? "spin" : ""}`}>&#x21BB;</span>
+              {isRefreshing ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
+
           {/* Calendar */}
           <div className="db-card db-calendar">
             <div className="cal-head">
@@ -691,9 +617,13 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="cal-grid">
-              {DAY_LABELS.map(d => <div key={d} className="cal-dow">{d}</div>)}
+              {DAY_LABELS.map((d) => <div key={d} className="cal-dow">{d}</div>)}
               {calWeeks.flat().map((d, i) => {
-                const isHl = d && calendarEvts.some(e => new Date(e.start).getDate() === d && new Date(e.start).getMonth() === calMonth && new Date(e.start).getFullYear() === calYear);
+                const isHl = d && calendarEvts.some(
+                  (e) => new Date(e.start).getDate() === d &&
+                    new Date(e.start).getMonth() === calMonth &&
+                    new Date(e.start).getFullYear() === calYear,
+                );
                 return (
                   <div
                     key={i}
@@ -719,35 +649,17 @@ const Dashboard = () => {
                 {showTripForm ? <span style={{ fontSize: 18, lineHeight: 1 }}>×</span> : <FiPlus size={16} />}
               </button>
             </div>
-
             {showTripForm && (
               <div className="trip-form">
-                <input
-                  placeholder="Trip name (e.g. Beach Escape)"
-                  value={tripForm.tag}
-                  onChange={e => setTripForm({ ...tripForm, tag: e.target.value })}
-                />
-                <input
-                  placeholder="Location (e.g. Bali, Indonesia)"
-                  value={tripForm.loc}
-                  onChange={e => setTripForm({ ...tripForm, loc: e.target.value })}
-                />
+                <input placeholder="Trip name (e.g. Beach Escape)" value={tripForm.tag} onChange={(e) => setTripForm({ ...tripForm, tag: e.target.value })} />
+                <input placeholder="Location (e.g. Bali, Indonesia)" value={tripForm.loc} onChange={(e) => setTripForm({ ...tripForm, loc: e.target.value })} />
                 <div className="trip-form-row">
-                  <input
-                    placeholder="Date (e.g. 5 - 10 Aug)"
-                    value={tripForm.date}
-                    onChange={e => setTripForm({ ...tripForm, date: e.target.value })}
-                  />
-                  <input
-                    placeholder="Users (e.g. +5)"
-                    value={tripForm.users}
-                    onChange={e => setTripForm({ ...tripForm, users: e.target.value })}
-                  />
+                  <input placeholder="Date (e.g. 5 - 10 Aug)" value={tripForm.date} onChange={(e) => setTripForm({ ...tripForm, date: e.target.value })} />
+                  <input placeholder="Users (e.g. +5)" value={tripForm.users} onChange={(e) => setTripForm({ ...tripForm, users: e.target.value })} />
                 </div>
                 <button className="trip-form-submit" onClick={handleAddTrip}>Add Trip</button>
               </div>
             )}
-
             <div className="trip-list">
               {displayUpcomingTrips.map((t, i) => (
                 <div key={i} className={`trip-item ${t.active ? "active" : ""}`}>
@@ -756,8 +668,8 @@ const Dashboard = () => {
                     <span className="trip-tag">{t.tag}</span>
                     <h5>{t.loc}</h5>
                     <div className="trip-meta">
-                      <span><FiUser size={13} style={{ marginRight: 2, verticalAlign: 'middle' }} /> {t.users}</span>
-                      <span><FiCalendar size={13} style={{ marginRight: 2, verticalAlign: 'middle' }} /> {t.date}</span>
+                      <span><FiUser size={13} style={{ marginRight: 2, verticalAlign: "middle" }} /> {t.users}</span>
+                      <span><FiCalendar size={13} style={{ marginRight: 2, verticalAlign: "middle" }} /> {t.date}</span>
                     </div>
                   </div>
                 </div>
@@ -767,19 +679,13 @@ const Dashboard = () => {
 
           {/* Recent Activity */}
           <div className="db-card db-activity">
-            <div className="db-card-head">
-              <h4>Recent Activity</h4>
-              <span className="dots">•••</span>
-            </div>
+            <div className="db-card-head"><h4>Recent Activity</h4><span className="dots">•••</span></div>
             <p className="act-day">Today</p>
             <div className="act-list">
               {activitiesList.map((a, i) => (
                 <div key={i} className="act-row">
                   <div className="act-icon" style={{ background: `${a.color}18`, color: a.color }}>{a.icon}</div>
-                  <div className="act-body">
-                    <p>{a.text}</p>
-                    <span className="act-time">{a.time}</span>
-                  </div>
+                  <div className="act-body"><p>{a.text}</p><span className="act-time">{a.time}</span></div>
                 </div>
               ))}
             </div>

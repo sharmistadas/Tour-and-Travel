@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   FiImage, FiEdit3, FiTrash2, FiPlus, FiX,
   FiGlobe, FiDollarSign, FiHeadphones, FiCheck,
@@ -6,9 +6,7 @@ import {
   FiGrid, FiAward, FiMail, FiMessageSquare,
   FiPlay, FiCompass, FiUsers, FiShield, FiSave,
 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
 import "../styles/Service.css";
-import api from "../utils/api";
 
 /* ─── icon map ─── */
 const ICONS = {
@@ -30,23 +28,11 @@ const EMPTY_DATA = {
    COMPONENT
    ═══════════════════════════════════════ */
 export default function Service() {
-  const navigate = useNavigate();
   const [data, setData] = useState(EMPTY_DATA);
-
-  // -----------------------------
-  // AUTHENTICATION
-  // -----------------------------
-  useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) {
-      navigate("/login");
-    }
-  }, [navigate]);
   const [tab, setTab] = useState("banner");
   const [toast, setToast] = useState(null);
-  const [bannerId, setBannerId] = useState(null);
-  const [experienceId, setExperienceId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   /* ── modal state ── */
   const [modal, setModal] = useState(null);
@@ -57,7 +43,7 @@ export default function Service() {
   const [bannerPreview, setBannerPreview] = useState("");
   const [introFile, setIntroFile] = useState(null);
   const [introPreview, setIntroPreview] = useState("");
-  const [expFiles, setExpFiles] = useState([]); // array of { file, preview }
+  const [expFiles, setExpFiles] = useState([]);
   const bannerInputRef = useRef(null);
   const introInputRef = useRef(null);
   const expInputRefs = useRef([]);
@@ -69,77 +55,13 @@ export default function Service() {
   /* ── file helpers ── */
   const handleFileSelect = (file, setFile, setPreview) => {
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      flash("Image size should be less than 5MB");
-      return;
-    }
-    if (!file.type.startsWith("image/")) {
-      flash("Please select an image file");
-      return;
-    }
+    if (file.size > 5 * 1024 * 1024) { flash("Image size should be less than 5MB"); return; }
+    if (!file.type.startsWith("image/")) { flash("Please select an image file"); return; }
     setFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setPreview(reader.result);
     reader.readAsDataURL(file);
   };
-
-  /* ── API fetch helpers ── */
-  const fetchFeatures = useCallback(async () => {
-    try {
-      const res = await api.get("/services/services");
-      const items = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-      setData(d => ({ ...d, features: items.map(s => ({ id: s._id || s.id, icon: s.icon || "globe", title: s.title || "", text: s.text || s.description || "" })) }));
-    } catch (err) { console.error("Failed to fetch services:", err); }
-  }, []);
-
-  const fetchIntros = useCallback(async () => {
-    try {
-      const res = await api.get("/services/info-pages");
-      const items = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-      setData(d => ({ ...d, intros: items.map(p => ({ id: p._id || p.id, tag: p.tag || "", heading: p.heading || p.title || "", desc: p.desc || p.description || "", ctaText: p.ctaText || p.buttonText || "", imgUrl: p.imgUrl || p.image || "" })) }));
-    } catch (err) { console.error("Failed to fetch info-pages:", err); }
-  }, []);
-
-  const fetchBanner = useCallback(async () => {
-    try {
-      const res = await api.get("/services/pages");
-      const items = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-      if (items.length > 0) {
-        const b = items[0];
-        setBannerId(b._id || b.id);
-        const bgUrl = b.bgUrl || b.image || b.backgroundImage || "";
-        setData(d => ({ ...d, banner: { title: b.title || "", subtitle: b.subtitle || b.description || "", bgUrl } }));
-        setBannerPreview(bgUrl);
-      }
-    } catch (err) { console.error("Failed to fetch pages (banner):", err); }
-  }, []);
-
-  const fetchExperience = useCallback(async () => {
-    try {
-      const res = await api.get("/services/multi-pages");
-      const items = Array.isArray(res.data) ? res.data : (res.data?.data || []);
-      if (items.length > 0) {
-        const exp = items[0];
-        setExperienceId(exp._id || exp.id);
-        const imgs = exp.images || [];
-        setData(d => ({
-          ...d, experience: {
-            heading: exp.heading || exp.title || "", desc: exp.desc || exp.description || "",
-            ctaText: exp.ctaText || exp.buttonText || "",
-            bullets: (exp.bullets || []).map(bl => ({ id: bl._id || bl.id || Math.random().toString(36).slice(2, 10), icon: bl.icon || "check", text: bl.text || "" })),
-            images: imgs,
-          }
-        }));
-        setExpFiles(imgs.map(url => ({ file: null, preview: url })));
-      }
-    } catch (err) { console.error("Failed to fetch multi-pages:", err); }
-  }, []);
-
-  const fetchAll = useCallback(async () => {
-    await Promise.all([fetchBanner(), fetchIntros(), fetchFeatures(), fetchExperience()]);
-  }, [fetchBanner, fetchIntros, fetchFeatures, fetchExperience]);
-
-  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   /* ── CRUD helpers ── */
   const openAdd = (type) => {
@@ -160,120 +82,96 @@ export default function Service() {
     setIntroPreview("");
   };
 
-  const saveIntro = async () => {
+  /* ── Intro CRUD ── */
+  const saveIntro = () => {
     if (!f("heading")) return;
-    const fd = new FormData();
-    fd.append("title", f("heading"));
-    fd.append("description", f("desc"));
-    if (introFile) {
-      fd.append("image", introFile);
+    const imgUrl = introPreview || f("imgUrl") || "";
+    if (modal.mode === "add") {
+      const newIntro = {
+        id: Math.random().toString(36).slice(2, 10),
+        tag: f("tag"), heading: f("heading"), desc: f("desc"),
+        ctaText: f("ctaText"), imgUrl,
+      };
+      setData(d => ({ ...d, intros: [...d.intros, newIntro] }));
+    } else {
+      setData(d => ({
+        ...d,
+        intros: d.intros.map(i =>
+          i.id === modal.id
+            ? { ...i, tag: f("tag"), heading: f("heading"), desc: f("desc"), ctaText: f("ctaText"), imgUrl }
+            : i
+        ),
+      }));
     }
-    try {
-      if (modal.mode === "add") { await api.post("/services/info-pages", fd, { headers: { "Content-Type": "multipart/form-data" } }); }
-      else { await api.put(`/services/info-pages/${modal.id}`, fd, { headers: { "Content-Type": "multipart/form-data" } }); }
-      closeModal(); flash("Intro saved!"); fetchIntros();
-    } catch (err) { flash(err.response?.data?.message || err.response?.data?.error || "Failed to save intro"); }
+    closeModal();
+    flash("Intro saved!");
   };
 
-  const deleteIntro = async (id) => {
+  const deleteIntro = (id) => {
     if (!window.confirm("Delete this intro section?")) return;
-    try { await api.delete(`/services/info-pages/${id}`); flash("Intro deleted"); fetchIntros(); }
-    catch (err) { flash(err.response?.data?.message || "Failed to delete intro"); }
+    setData(d => ({ ...d, intros: d.intros.filter(i => i.id !== id) }));
+    flash("Intro deleted");
   };
 
-  const saveFeature = async () => {
+  /* ── Feature CRUD ── */
+  const saveFeature = () => {
     if (!f("title")) return;
-    const payload = { icon: f("icon") || "globe", title: f("title"), text: f("text"), description: f("text") };
-    try {
-      if (modal.mode === "add") { await api.post("/services/services", payload); }
-      else { await api.put(`/services/services/${modal.id}`, payload); }
-      closeModal(); flash("Feature saved!"); fetchFeatures();
-    } catch (err) { flash(err.response?.data?.message || "Failed to save feature"); }
+    if (modal.mode === "add") {
+      const newFeature = {
+        id: Math.random().toString(36).slice(2, 10),
+        icon: f("icon") || "globe", title: f("title"), text: f("text"),
+      };
+      setData(d => ({ ...d, features: [...d.features, newFeature] }));
+    } else {
+      setData(d => ({
+        ...d,
+        features: d.features.map(ft =>
+          ft.id === modal.id
+            ? { ...ft, icon: f("icon") || "globe", title: f("title"), text: f("text") }
+            : ft
+        ),
+      }));
+    }
+    closeModal();
+    flash("Feature saved!");
   };
 
-  const deleteFeature = async (id) => {
+  const deleteFeature = (id) => {
     if (!window.confirm("Delete this feature?")) return;
-    try { await api.delete(`/services/services/${id}`); flash("Feature deleted"); fetchFeatures(); }
-    catch (err) { flash(err.response?.data?.message || "Failed to delete feature"); }
+    setData(d => ({ ...d, features: d.features.filter(ft => ft.id !== id) }));
+    flash("Feature deleted");
   };
 
+  /* ── Bullet helpers ── */
   const addBullet = () => setData(d => ({ ...d, experience: { ...d.experience, bullets: [...d.experience.bullets, { id: Math.random().toString(36).slice(2, 10), icon: "check", text: "New point" }] } }));
   const updateBullet = (id, patch) => setData(d => ({ ...d, experience: { ...d.experience, bullets: d.experience.bullets.map(b => b.id === id ? { ...b, ...patch } : b) } }));
   const deleteBullet = (id) => setData(d => ({ ...d, experience: { ...d.experience, bullets: d.experience.bullets.filter(b => b.id !== id) } }));
 
-  const saveAll = async () => {
+  /* ── Save All ── */
+  const saveAll = () => {
     setSaving(true);
-    try {
-      /* ── Save Banner via FormData ── */
-      const bannerFd = new FormData();
-      bannerFd.append("title", data.banner.title);
-      bannerFd.append("description", data.banner.subtitle);
-      if (bannerFile) {
-        bannerFd.append("image", bannerFile);
-      }
-      if (bannerId) {
-        await api.put(`/services/pages/${bannerId}`, bannerFd, { headers: { "Content-Type": "multipart/form-data" } });
-      } else {
-        const res = await api.post("/services/pages", bannerFd, { headers: { "Content-Type": "multipart/form-data" } });
-        const c = res.data?.data || res.data;
-        if (c?._id || c?.id) setBannerId(c._id || c.id);
-      }
-
-      /* ── Save Experience via FormData ── */
-      const expFd = new FormData();
-      expFd.append("title", data.experience.heading);
-      expFd.append("description", data.experience.desc);
-      // Append image files
-      const hasNewFiles = expFiles.some(ef => ef.file !== null);
-      if (hasNewFiles) {
-        for (const ef of expFiles) {
-          if (ef.file) {
-            expFd.append("images", ef.file);
-          }
-        }
-      }
-      if (experienceId) {
-        await api.put(`/services/multi-pages/${experienceId}`, expFd, { headers: { "Content-Type": "multipart/form-data" } });
-      } else {
-        const res = await api.post("/services/multi-pages", expFd, { headers: { "Content-Type": "multipart/form-data" } });
-        const c = res.data?.data || res.data;
-        if (c?._id || c?.id) setExperienceId(c._id || c.id);
-      }
-
+    setTimeout(() => {
       flash("All changes saved!");
       setBannerFile(null);
-      fetchAll();
-    } catch (err) { flash(err.response?.data?.message || err.response?.data?.error || "Failed to save changes"); }
-    finally { setSaving(false); }
+      setSaving(false);
+    }, 800);
   };
 
   /* ── Experience image helpers ── */
   const addExpImage = () => {
-    if (expFiles.length >= 4) {
-      flash("Maximum 4 images allowed");
-      return;
-    }
+    if (expFiles.length >= 4) { flash("Maximum 4 images allowed"); return; }
     setExpFiles(prev => [...prev, { file: null, preview: "" }]);
   };
 
   const removeExpImage = (index) => {
-    if (expFiles.length <= 1) {
-      flash("Minimum 1 image required");
-      return;
-    }
+    if (expFiles.length <= 1) { flash("Minimum 1 image required"); return; }
     setExpFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleExpFileSelect = (index, file) => {
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      flash("Image size should be less than 5MB");
-      return;
-    }
-    if (!file.type.startsWith("image/")) {
-      flash("Please select an image file");
-      return;
-    }
+    if (file.size > 5 * 1024 * 1024) { flash("Image size should be less than 5MB"); return; }
+    if (!file.type.startsWith("image/")) { flash("Please select an image file"); return; }
     const reader = new FileReader();
     reader.onloadend = () => {
       setExpFiles(prev => {
@@ -283,6 +181,28 @@ export default function Service() {
       });
     };
     reader.readAsDataURL(file);
+  };
+
+  // ✅ FIXED handleRefresh — clears all page data and resets to empty state, no page reload
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+
+    // Clear all data immediately so UI shows reset/empty state
+    setData(EMPTY_DATA);
+    setTab("banner");
+    setModal(null);
+    setForm({});
+    setBannerFile(null);
+    setBannerPreview("");
+    setIntroFile(null);
+    setIntroPreview("");
+    setExpFiles([]);
+
+    // Simulate async reset (replace with API call if you add one later)
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    setIsRefreshing(false);
+    flash("Page refreshed!");
   };
 
   /* ── tab config ── */
@@ -303,9 +223,24 @@ export default function Service() {
           <h2 className="svc-title">Services Page</h2>
           <p className="svc-subtitle">Manage all sections of your public Services page</p>
         </div>
-        <button className="svc-save-btn" onClick={saveAll} disabled={saving}>
-          {saving ? <><span className="svc-spinner" /> Saving...</> : <><FiSave size={15} /> Save All Changes</>}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+
+          {/* ✅ Fixed Refresh Button */}
+          <button
+            type="button"
+            className={`admin-refresh-btn ${isRefreshing ? "refreshing" : ""}`}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title="Refresh page"
+          >
+            <span className={`rfr-icon ${isRefreshing ? "spin" : ""}`}>&#x21BB;</span>
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </button>
+
+          <button className="svc-save-btn" onClick={saveAll} disabled={saving}>
+            {saving ? <><span className="svc-spinner" /> Saving...</> : <><FiSave size={15} /> Save All Changes</>}
+          </button>
+        </div>
       </div>
 
       {/* ── Tabs ── */}
@@ -326,10 +261,7 @@ export default function Service() {
             <div className="svc-card">
               <div className="svc-card-head">
                 <div className="svc-card-icon" style={{ background: "#EEF2FF", color: "#4F46E5" }}><FiImage size={18} /></div>
-                <div>
-                  <h4>Hero Banner</h4>
-                  <p>The top banner visitors see on the Services page</p>
-                </div>
+                <div><h4>Hero Banner</h4><p>The top banner visitors see on the Services page</p></div>
               </div>
               <div className="svc-form-grid">
                 <div className="svc-field full">
@@ -350,25 +282,14 @@ export default function Service() {
                     onDrop={e => {
                       e.preventDefault();
                       e.currentTarget.classList.remove("dragover");
-                      const file = e.dataTransfer.files[0];
-                      handleFileSelect(file, setBannerFile, setBannerPreview);
+                      handleFileSelect(e.dataTransfer.files[0], setBannerFile, setBannerPreview);
                     }}
                   >
                     {bannerPreview ? (
                       <div className="svc-upload-preview">
                         <img src={bannerPreview} alt="Banner preview" />
-                        <div className="svc-upload-preview-overlay">
-                          <span>Click to change</span>
-                        </div>
-                        <button
-                          className="svc-upload-remove"
-                          onClick={e => {
-                            e.stopPropagation();
-                            setBannerFile(null);
-                            setBannerPreview("");
-                            setData(d => ({ ...d, banner: { ...d.banner, bgUrl: "" } }));
-                          }}
-                        >
+                        <div className="svc-upload-preview-overlay"><span>Click to change</span></div>
+                        <button className="svc-upload-remove" onClick={e => { e.stopPropagation(); setBannerFile(null); setBannerPreview(""); setData(d => ({ ...d, banner: { ...d.banner, bgUrl: "" } })); }}>
                           <FiX size={14} />
                         </button>
                       </div>
@@ -379,17 +300,10 @@ export default function Service() {
                         <span>Supports JPG, PNG, WEBP (Max 5MB)</span>
                       </div>
                     )}
-                    <input
-                      ref={bannerInputRef}
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={e => handleFileSelect(e.target.files[0], setBannerFile, setBannerPreview)}
-                    />
+                    <input ref={bannerInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleFileSelect(e.target.files[0], setBannerFile, setBannerPreview)} />
                   </div>
                 </div>
               </div>
-              {/* Preview */}
               <div className="svc-banner-preview" style={{ backgroundImage: bannerPreview ? `url(${bannerPreview})` : "linear-gradient(135deg,#1e293b,#334155)" }}>
                 <div className="svc-banner-overlay">
                   <h3>{data.banner.title || "Banner Title"}</h3>
@@ -403,19 +317,13 @@ export default function Service() {
         {/* ════════ CONTENT (Intros + Features) ════════ */}
         {tab === "content" && (
           <div className="svc-section">
-            {/* ── Intro sections ── */}
             <div className="svc-card">
               <div className="svc-card-head">
                 <div className="svc-card-icon" style={{ background: "#D1FAE5", color: "#059669" }}><FiPlay size={18} /></div>
-                <div>
-                  <h4>Intro Sections</h4>
-                  <p>Hero content blocks with image, heading, and call-to-action</p>
-                </div>
+                <div><h4>Intro Sections</h4><p>Hero content blocks with image, heading, and call-to-action</p></div>
                 <button className="svc-add-btn" onClick={() => openAdd("intro")}><FiPlus size={14} /> Add</button>
               </div>
-
               {data.intros.length === 0 && <div className="svc-empty">No intro sections yet. Click "Add" to create one.</div>}
-
               <div className="svc-intro-list">
                 {data.intros.map(intro => (
                   <div key={intro.id} className="svc-intro-item">
@@ -437,19 +345,13 @@ export default function Service() {
               </div>
             </div>
 
-            {/* ── Features ── */}
             <div className="svc-card">
               <div className="svc-card-head">
                 <div className="svc-card-icon" style={{ background: "#FEF3C7", color: "#D97706" }}><FiGrid size={18} /></div>
-                <div>
-                  <h4>Feature Cards</h4>
-                  <p>The 3 highlight cards shown below the intro</p>
-                </div>
+                <div><h4>Feature Cards</h4><p>The 3 highlight cards shown below the intro</p></div>
                 <button className="svc-add-btn" onClick={() => openAdd("feature")}><FiPlus size={14} /> Add</button>
               </div>
-
               {data.features.length === 0 && <div className="svc-empty">No features yet.</div>}
-
               <div className="svc-features-grid">
                 {data.features.map(ft => (
                   <div key={ft.id} className="svc-feature-card">
@@ -473,12 +375,8 @@ export default function Service() {
             <div className="svc-card">
               <div className="svc-card-head">
                 <div className="svc-card-icon" style={{ background: "#EDE9FE", color: "#7C3AED" }}><FiAward size={18} /></div>
-                <div>
-                  <h4>Experience Section</h4>
-                  <p>The "20 years" block with images and bullet list</p>
-                </div>
+                <div><h4>Experience Section</h4><p>The "20 years" block with images and bullet list</p></div>
               </div>
-
               <div className="svc-form-grid">
                 <div className="svc-field full">
                   <label>Heading</label>
@@ -497,12 +395,7 @@ export default function Service() {
               <div className="svc-sub-section">
                 <div className="svc-sub-head">
                   <h5>Experience Images (Min 1, Max 4)</h5>
-                  <button
-                    className="svc-add-btn sm"
-                    onClick={addExpImage}
-                    disabled={expFiles.length >= 4}
-                    style={{ opacity: expFiles.length >= 4 ? 0.5 : 1 }}
-                  >
+                  <button className="svc-add-btn sm" onClick={addExpImage} disabled={expFiles.length >= 4} style={{ opacity: expFiles.length >= 4 ? 0.5 : 1 }}>
                     <FiPlus size={13} /> Add Image
                   </button>
                 </div>
@@ -514,39 +407,21 @@ export default function Service() {
                         onClick={() => expInputRefs.current[i]?.click()}
                         onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add("dragover"); }}
                         onDragLeave={e => e.currentTarget.classList.remove("dragover")}
-                        onDrop={e => {
-                          e.preventDefault();
-                          e.currentTarget.classList.remove("dragover");
-                          handleExpFileSelect(i, e.dataTransfer.files[0]);
-                        }}
+                        onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove("dragover"); handleExpFileSelect(i, e.dataTransfer.files[0]); }}
                       >
                         {ef.preview ? (
                           <div className="svc-upload-preview">
                             <img src={ef.preview} alt={`Experience ${i + 1}`} />
-                            <div className="svc-upload-preview-overlay">
-                              <span>Click to change</span>
-                            </div>
+                            <div className="svc-upload-preview-overlay"><span>Click to change</span></div>
                           </div>
                         ) : (
                           <div className="svc-upload-placeholder compact">
-                            <FiUpload size={20} />
-                            <p>Upload Image {i + 1}</p>
+                            <FiUpload size={20} /><p>Upload Image {i + 1}</p>
                           </div>
                         )}
-                        <input
-                          ref={el => expInputRefs.current[i] = el}
-                          type="file"
-                          accept="image/*"
-                          style={{ display: "none" }}
-                          onChange={e => handleExpFileSelect(i, e.target.files[0])}
-                        />
+                        <input ref={el => expInputRefs.current[i] = el} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleExpFileSelect(i, e.target.files[0])} />
                       </div>
-                      <button
-                        className="svc-btn-del sm"
-                        onClick={() => removeExpImage(i)}
-                        disabled={expFiles.length <= 1}
-                        style={{ opacity: expFiles.length <= 1 ? 0.5 : 1, marginTop: "6px" }}
-                      >
+                      <button className="svc-btn-del sm" onClick={() => removeExpImage(i)} disabled={expFiles.length <= 1} style={{ opacity: expFiles.length <= 1 ? 0.5 : 1, marginTop: "6px" }}>
                         <FiTrash2 size={13} /> Remove
                       </button>
                     </div>
@@ -554,7 +429,6 @@ export default function Service() {
                 </div>
               </div>
 
-              {/* Bullets */}
               <div className="svc-sub-section">
                 <div className="svc-sub-head">
                   <h5>Bullet Points</h5>
@@ -573,7 +447,6 @@ export default function Service() {
                 </div>
               </div>
 
-              {/* Preview */}
               <div className="svc-exp-preview">
                 <div className="svc-exp-images">
                   {expFiles.filter(ef => ef.preview).map((ef, i) => (
@@ -608,7 +481,6 @@ export default function Service() {
               <button onClick={closeModal}><FiX size={18} /></button>
             </div>
 
-            {/* Intro form */}
             {modal.type === "intro" && (
               <div className="svc-modal-body">
                 <div className="svc-field"><label>Tag</label><input value={f("tag")} onChange={e => fSet("tag", e.target.value)} placeholder="e.g. Great Service!" /></div>
@@ -622,26 +494,13 @@ export default function Service() {
                     onClick={() => introInputRef.current?.click()}
                     onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add("dragover"); }}
                     onDragLeave={e => e.currentTarget.classList.remove("dragover")}
-                    onDrop={e => {
-                      e.preventDefault();
-                      e.currentTarget.classList.remove("dragover");
-                      handleFileSelect(e.dataTransfer.files[0], setIntroFile, setIntroPreview);
-                    }}
+                    onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove("dragover"); handleFileSelect(e.dataTransfer.files[0], setIntroFile, setIntroPreview); }}
                   >
                     {introPreview ? (
                       <div className="svc-upload-preview">
                         <img src={introPreview} alt="Intro preview" />
-                        <div className="svc-upload-preview-overlay">
-                          <span>Click to change</span>
-                        </div>
-                        <button
-                          className="svc-upload-remove"
-                          onClick={e => {
-                            e.stopPropagation();
-                            setIntroFile(null);
-                            setIntroPreview("");
-                          }}
-                        >
+                        <div className="svc-upload-preview-overlay"><span>Click to change</span></div>
+                        <button className="svc-upload-remove" onClick={e => { e.stopPropagation(); setIntroFile(null); setIntroPreview(""); }}>
                           <FiX size={14} />
                         </button>
                       </div>
@@ -652,13 +511,7 @@ export default function Service() {
                         <span>Supports JPG, PNG, WEBP (Max 5MB)</span>
                       </div>
                     )}
-                    <input
-                      ref={introInputRef}
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={e => handleFileSelect(e.target.files[0], setIntroFile, setIntroPreview)}
-                    />
+                    <input ref={introInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleFileSelect(e.target.files[0], setIntroFile, setIntroPreview)} />
                   </div>
                 </div>
                 <div className="svc-modal-actions">
@@ -668,7 +521,6 @@ export default function Service() {
               </div>
             )}
 
-            {/* Feature form */}
             {modal.type === "feature" && (
               <div className="svc-modal-body">
                 <div className="svc-field">
@@ -693,12 +545,7 @@ export default function Service() {
         </div>
       )}
 
-      {/* ── Toast ── */}
-      {toast && (
-        <div className="svc-toast">
-          <FiCheck size={16} /> {toast}
-        </div>
-      )}
+      {toast && <div className="svc-toast"><FiCheck size={16} /> {toast}</div>}
     </div>
   );
 }

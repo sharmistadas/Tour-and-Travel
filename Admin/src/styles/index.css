@@ -30,3 +30,66 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* ─── Global Refresh Button ─── */
+.admin-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  margin: 0 4px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 2px 6px rgba(41, 82, 204, 0.25);
+}
+
+.admin-refresh-btn:hover {
+  background-color: #6B8FE8;
+  box-shadow: 0 4px 12px rgba(107, 143, 232, 0.35);
+  transform: translateY(-1px);
+}
+
+.admin-refresh-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(41, 82, 204, 0.2);
+}
+
+.admin-refresh-btn .rfr-icon {
+  display: inline-flex;
+  font-size: 15px;
+  line-height: 1;
+  transition: transform 0.4s ease;
+}
+
+.admin-refresh-btn:hover .rfr-icon {
+  transform: rotate(360deg);
+}
+
+.admin-refresh-btn .rfr-icon.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-refresh-btn {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}

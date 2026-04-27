@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+﻿import React, { useMemo, useState, useEffect } from "react";
 import "../styles/Traveller.css";
 
 const ROWS_PER_PAGE = 11;
@@ -59,7 +59,7 @@ const ALL_TRAVELERS = [
     category: "Bronze",
   },
   {
-    name: "Lucas O’connor",
+    name: "Lucas O'connor",
     email: "lucas.oconnor@example.com",
     phone: "+1 (555) 901-2345",
     address: "Munich, Germany",
@@ -176,7 +176,7 @@ const ALL_TRAVELERS = [
     category: "Bronze",
   },
   {
-    name: "Lucas O’connor",
+    name: "Lucas O'connor",
     email: "lucas.oconnor@example.com",
     phone: "+1 (555) 901-2345",
     address: "Munich, Germany",
@@ -193,7 +193,6 @@ const ALL_TRAVELERS = [
     packages: "Bali Beach Escape",
     category: "Gold",
   },
- 
 ];
 
 function getInitials(name) {
@@ -217,6 +216,7 @@ export default function Traveller() {
   const [packageFilter, setPackageFilter] = useState("Package");
   const [memberFilter, setMemberFilter] = useState("Member Category");
   const [search, setSearch] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -250,10 +250,30 @@ export default function Traveller() {
     });
   };
 
+  // ✅ FIXED handleRefresh — clears and resets all page data, no page reload
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+
+    // Clear all data immediately so UI shows reset state
+    setTravelers([]);
+    setSearch("");
+    setPackageFilter("Package");
+    setMemberFilter("Member Category");
+    setPage(1);
+    setIsModalOpen(false);
+
+    // Simulate brief loading then restore original data
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    // Re-populate with original data (replace with API call if data comes from backend)
+    setTravelers(ALL_TRAVELERS);
+
+    setIsRefreshing(false);
+  };
+
   // FILTER
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
-
     return travelers.filter((t) => {
       const matchesSearch =
         !s ||
@@ -263,22 +283,17 @@ export default function Traveller() {
         t.job.toLowerCase().includes(s) ||
         t.packages.toLowerCase().includes(s) ||
         t.category.toLowerCase().includes(s);
-
       const matchesPackage =
         packageFilter === "Package" ||
         t.packages.toLowerCase().includes(packageFilter.toLowerCase());
-
       const matchesMember =
         memberFilter === "Member Category" || t.category === memberFilter;
-
       return matchesSearch && matchesPackage && matchesMember;
     });
   }, [packageFilter, memberFilter, search, travelers]);
 
-  // TOTAL PAGES
   const totalPages = Math.max(1, Math.ceil(filtered.length / ROWS_PER_PAGE));
 
-  // PAGE DATA
   const pageRows = useMemo(() => {
     const start = (page - 1) * ROWS_PER_PAGE;
     return filtered.slice(start, start + ROWS_PER_PAGE);
@@ -287,33 +302,23 @@ export default function Traveller() {
   const showingFrom = (page - 1) * ROWS_PER_PAGE + 1;
   const showingTo = Math.min(page * ROWS_PER_PAGE, filtered.length);
 
-  // RESET PAGE WHEN FILTER CHANGE
   useEffect(() => {
-    setPage(1);
+    setPage((prev) => (prev !== 1 ? 1 : prev));
   }, [packageFilter, memberFilter, search]);
 
-  // DYNAMIC PAGINATION
   const pages = useMemo(() => {
     const pageNumbers = [];
-
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
       return pageNumbers;
     }
-
     pageNumbers.push(1);
-
     if (page > 4) pageNumbers.push("...");
-
     const start = Math.max(2, page - 1);
     const end = Math.min(totalPages - 1, page + 1);
-
     for (let i = start; i <= end; i++) pageNumbers.push(i);
-
     if (page < totalPages - 3) pageNumbers.push("...");
-
     pageNumbers.push(totalPages);
-
     return pageNumbers;
   }, [page, totalPages]);
 
@@ -323,19 +328,15 @@ export default function Traveller() {
       <div className="travelie-header">
         <div className="left">
           <h2>Travelers</h2>
-
           <div className="filters">
             <button
               className="filter-btn"
               onClick={() =>
-                setPackageFilter((v) =>
-                  v === "Package" ? "Tokyo" : "Package",
-                )
+                setPackageFilter((v) => (v === "Package" ? "Tokyo" : "Package"))
               }
             >
               {packageFilter} <i className="bi bi-chevron-down"></i>
             </button>
-
             <select
               className="filter-select"
               value={memberFilter}
@@ -361,7 +362,32 @@ export default function Traveller() {
           </div>
 
           {/* Add */}
-          <button className="add-btn" onClick={() => setIsModalOpen(true)}>Add Traveler</button>
+          <button className="add-btn" onClick={() => setIsModalOpen(true)}>
+            Add Traveler
+          </button>
+
+          {/* ✅ Fixed Refresh Button */}
+          <button
+            type="button"
+            className={`admin-refresh-btn ${isRefreshing ? "refreshing" : ""}`}
+            style={{
+              position: "relative",
+              top: "auto",
+              right: "auto",
+              zIndex: 1,
+              padding: "10px 16px",
+              height: "auto",
+              borderRadius: "14px",
+            }}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title="Refresh page"
+          >
+            <span className={`rfr-icon ${isRefreshing ? "spin" : ""}`}>
+              &#x21BB;
+            </span>
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </button>
         </div>
       </div>
 
@@ -371,44 +397,97 @@ export default function Traveller() {
           <div className="trav-modal">
             <div className="trav-modal-header">
               <h3>Add New Traveler</h3>
-              <button className="close-btn" onClick={() => setIsModalOpen(false)}>×</button>
+              <button
+                className="close-btn"
+                onClick={() => setIsModalOpen(false)}
+              >
+                ×
+              </button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="trav-form-group">
                 <label>Name</label>
-                <input required name="name" value={formData.name} onChange={handleInputChange} placeholder="Full Name" />
+                <input
+                  required
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Full Name"
+                />
               </div>
               <div className="trav-form-group">
                 <label>Email</label>
-                <input required type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Email Address" />
+                <input
+                  required
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Email Address"
+                />
               </div>
               <div className="trav-form-group">
                 <label>Phone</label>
-                <input required name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Phone Number" />
+                <input
+                  required
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="Phone Number"
+                />
               </div>
               <div className="trav-form-group">
                 <label>Address</label>
-                <input required name="address" value={formData.address} onChange={handleInputChange} placeholder="Address" />
+                <input
+                  required
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="Address"
+                />
               </div>
               <div className="trav-form-group">
                 <label>Job</label>
-                <input required name="job" value={formData.job} onChange={handleInputChange} placeholder="Job Title" />
+                <input
+                  required
+                  name="job"
+                  value={formData.job}
+                  onChange={handleInputChange}
+                  placeholder="Job Title"
+                />
               </div>
               <div className="trav-form-group">
                 <label>Packages</label>
-                <input name="packages" value={formData.packages} onChange={handleInputChange} placeholder="Assigned Packages" />
+                <input
+                  name="packages"
+                  value={formData.packages}
+                  onChange={handleInputChange}
+                  placeholder="Assigned Packages"
+                />
               </div>
               <div className="trav-form-group">
                 <label>Category</label>
-                <select name="category" value={formData.category} onChange={handleInputChange}>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                >
                   <option value="Bronze">Bronze</option>
                   <option value="Silver">Silver</option>
                   <option value="Gold">Gold</option>
                 </select>
               </div>
               <div className="trav-modal-actions">
-                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn-save">Save Traveler</button>
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-save">
+                  Save Traveler
+                </button>
               </div>
             </form>
           </div>
@@ -429,31 +508,35 @@ export default function Traveller() {
                 <th>Member Category</th>
               </tr>
             </thead>
-
             <tbody>
-              {pageRows.map((t, idx) => (
-                <tr key={t.email + idx}>
-                  <td>
-                    <div className="name-cell">
-                      <div className="avatar">{getInitials(t.name)}</div>
-                      <div>
-                        <div className="traveler-name">{t.name}</div>
-                        <div className="traveler-email">{t.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>{t.phone}</td>
-                  <td>{t.address}</td>
-                  <td>{t.job}</td>
-                  <td>{t.packages}</td>
-                  <td>
-                    <CategoryPill value={t.category} />
+              {isRefreshing ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-4 text-muted">
+                    Refreshing...
                   </td>
                 </tr>
-              ))}
-
-              {/* IF NO DATA */}
-              {pageRows.length === 0 && (
+              ) : pageRows.length > 0 ? (
+                pageRows.map((t, idx) => (
+                  <tr key={t.email + idx}>
+                    <td>
+                      <div className="name-cell">
+                        <div className="avatar">{getInitials(t.name)}</div>
+                        <div>
+                          <div className="traveler-name">{t.name}</div>
+                          <div className="traveler-email">{t.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{t.phone}</td>
+                    <td>{t.address}</td>
+                    <td>{t.job}</td>
+                    <td>{t.packages}</td>
+                    <td>
+                      <CategoryPill value={t.category} />
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan="6" className="text-center py-4 text-muted">
                     No travelers found
@@ -469,12 +552,11 @@ export default function Traveller() {
           <div className="showing">
             Showing
             <span className="showing-count">
-              {showingTo - showingFrom + 1}{" "}
+              {filtered.length > 0 ? showingTo - showingFrom + 1 : 0}{" "}
               <i className="bi bi-chevron-down"></i>
             </span>
             out of <b>{filtered.length}</b>
           </div>
-
           <div className="pagination-area">
             <button
               className="page-btn"
@@ -483,16 +565,13 @@ export default function Traveller() {
             >
               Previous
             </button>
-
             {pages.map((p, i) => {
-              if (p === "...") {
+              if (p === "...")
                 return (
                   <span key={i} className="dots">
                     ...
                   </span>
                 );
-              }
-
               return (
                 <button
                   key={p}
@@ -503,7 +582,6 @@ export default function Traveller() {
                 </button>
               );
             })}
-
             <button
               className="page-btn"
               disabled={page === totalPages}

@@ -32,6 +32,7 @@ import "./styles/App.css";
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
